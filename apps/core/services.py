@@ -34,3 +34,11 @@ def format_wing_clip_number(year: int, sequence: int) -> str:
 def format_document_no(prefix: str, year: int, sequence: int) -> str:
     be_year_2digit = (year + 543) % 100
     return f'{prefix}-{be_year_2digit:02d}-{sequence:05d}'
+
+
+def format_booking_number(year: int, sequence: int) -> str:
+    return format_document_no('BK', year, sequence)
+
+
+def format_payment_number(year: int, sequence: int) -> str:
+    return format_document_no('PM', year, sequence)

@@ -43,11 +43,12 @@ class OwnershipChainTests(TestCase):
         cls.hen = Hen.objects.create(owner=cls.customer_a, name='แม่ไก่ A')
         cls.booking = Booking.objects.create(
             customer=cls.customer_a, hen=cls.hen, breeder=cls.breeder,
-            booking_year=2026, booking_month=8, agreed_price=5000,
+            booking_number='BK-69-90001', booking_date=date(2026, 8, 1), booking_year=2026, booking_month=8,
+            price=5000,
         )
         cls.payment = Payment.objects.create(
-            booking=cls.booking, payment_type=Payment.PaymentType.DEPOSIT, amount=1000,
-            slip_image_path='slips/x.jpg', paid_at=timezone.now(),
+            payment_number='PM-69-90001', booking=cls.booking, payment_type=Payment.PaymentType.DEPOSIT, amount=1000,
+            slip='slips/x.jpg', paid_at=timezone.now(),
         )
         cls.timeline = BreedingTimeline.objects.create(
             booking=cls.booking, stage=BreedingTimeline.Stage.RECEIVED_AT_FARM,

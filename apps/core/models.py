@@ -22,9 +22,14 @@ class RunningNumberCounter(TimeStampedModel):
 
     class CounterType(models.TextChoices):
         WING_CLIP = 'WING_CLIP', 'Wing Clip Number'
-        BOOKING_QUEUE = 'BOOKING_QUEUE', 'Booking Queue Number'
+        # Human-readable Booking.booking_number (NOT the per-breeder-per-month queue
+        # slot number — that one is computed inside the locked BreederMonthlyQuota
+        # transaction in apps.bookings.services.lock_booking_slot, since it must be
+        # scoped per (breeder, year, month) rather than per year like this counter).
+        BOOKING_QUEUE = 'BOOKING_QUEUE', 'Booking Number'
         CONTRACT_NO = 'CONTRACT_NO', 'Contract Document Number'
         PEDIGREE_NO = 'PEDIGREE_NO', 'Pedigree Document Number'
+        PAYMENT_NO = 'PAYMENT_NO', 'Payment Number'
 
     counter_type = models.CharField(max_length=20, choices=CounterType.choices)
     year = models.SmallIntegerField()

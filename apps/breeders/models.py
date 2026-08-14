@@ -2,10 +2,11 @@ from django.conf import settings
 from django.db import models
 
 from apps.core.models import TimeStampedModel
+from apps.core.validators import validate_image_file
 
 
 class Breeder(TimeStampedModel):
-    """STEP1 §4.2 — พ่อพันธุ์ไก่."""
+    """STEP1 §4.2 — พ่อพันธุ์ไก่ (extended in STEP4 §PART A: breed, description, image, service_start_date)."""
 
     class Status(models.TextChoices):
         ACTIVE = 'ACTIVE', 'ให้บริการอยู่'
@@ -13,12 +14,20 @@ class Breeder(TimeStampedModel):
         RETIRED = 'RETIRED', 'ปลดระวาง'
 
     name = models.CharField(max_length=150, db_index=True)
+    breed = models.CharField(max_length=150, blank=True, null=True, db_index=True)
     bloodline = models.TextField(blank=True, null=True)
-    history = models.TextField(blank=True, null=True)
-    image_path = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(
+        upload_to='breeders/%Y/%m/', max_length=255, blank=True, null=True,
+        validators=[validate_image_file],
+    )
     service_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     default_monthly_quota = models.SmallIntegerField(default=0)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE, db_index=True)
+    # วันที่เริ่มให้บริการ — needed by the STEP5 queue: a breeder cannot be booked into a
+    # month before this date, so it must be captured now even though booking logic itself
+    # is out of scope for this step.
+    service_start_date = models.DateField(blank=True, null=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='breeders_created',

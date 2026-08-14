@@ -13,6 +13,10 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 api_v1_patterns = [
     path('auth/', include('apps.accounts.urls')),
+    path('breeders/', include('apps.breeders.urls')),
+    path('hens/', include('apps.hens.urls')),
+    path('bookings/', include('apps.bookings.urls')),
+    path('payments/', include('apps.payments.urls')),
 
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

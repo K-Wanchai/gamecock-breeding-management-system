@@ -10,9 +10,9 @@ class BreederMonthlyQuotaInline(admin.TabularInline):
 
 @admin.register(Breeder)
 class BreederAdmin(admin.ModelAdmin):
-    list_display = ('name', 'status', 'service_rate', 'default_monthly_quota', 'created_by')
-    list_filter = ('status',)
-    search_fields = ('name',)
+    list_display = ('name', 'breed', 'status', 'service_rate', 'default_monthly_quota', 'service_start_date', 'created_by')
+    list_filter = ('status', 'breed')
+    search_fields = ('name', 'breed', 'bloodline')
     inlines = [BreederMonthlyQuotaInline]
 
 

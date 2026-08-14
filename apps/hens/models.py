@@ -2,10 +2,11 @@ from django.conf import settings
 from django.db import models
 
 from apps.core.models import TimeStampedModel
+from apps.core.validators import validate_image_file
 
 
 class Hen(TimeStampedModel):
-    """STEP1 §4.4 — แม่ไก่ของลูกค้า."""
+    """STEP1 §4.4 — แม่ไก่ของลูกค้า (extended in STEP4 §PART B: bloodline, age_months, image)."""
 
     class Status(models.TextChoices):
         ACTIVE = 'ACTIVE', 'ใช้งานอยู่'
@@ -16,8 +17,13 @@ class Hen(TimeStampedModel):
     )
     name = models.CharField(max_length=150)
     breed = models.CharField(max_length=150, blank=True, null=True)
+    bloodline = models.TextField(blank=True, null=True)
+    age_months = models.PositiveSmallIntegerField(blank=True, null=True)
     history = models.TextField(blank=True, null=True)
-    image_path = models.CharField(max_length=255, blank=True, null=True)
+    image = models.ImageField(
+        upload_to='hens/%Y/%m/', max_length=255, blank=True, null=True,
+        validators=[validate_image_file],
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE, db_index=True)
 
     def get_owner_user_id(self):

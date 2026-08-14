@@ -28,19 +28,22 @@ class Step2RegressionTests(TestCase):
     def test_hen_cannot_have_two_active_bookings(self):
         Booking.objects.create(
             customer=self.customer, hen=self.hen, breeder=self.breeder,
-            booking_year=2026, booking_month=8, agreed_price=1000,
+            booking_number='BK-69-90101', booking_date=date(2026, 8, 1), booking_year=2026, booking_month=8,
+            price=1000,
         )
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 Booking.objects.create(
                     customer=self.customer, hen=self.hen, breeder=self.breeder,
-                    booking_year=2026, booking_month=9, agreed_price=1000,
+                    booking_number='BK-69-90102', booking_date=date(2026, 9, 1), booking_year=2026, booking_month=9,
+                    price=1000,
                 )
 
     def test_wing_clip_numbers_are_unique_across_batches(self):
         booking = Booking.objects.create(
             customer=self.customer, hen=self.hen, breeder=self.breeder,
-            booking_year=2026, booking_month=8, agreed_price=1000,
+            booking_number='BK-69-90103', booking_date=date(2026, 8, 1), booking_year=2026, booking_month=8,
+            price=1000,
         )
         egg = Egg.objects.create(booking=booking, lay_date=date.today(), egg_count=2, recorded_by=self.admin)
         hatching = Hatching.objects.create(

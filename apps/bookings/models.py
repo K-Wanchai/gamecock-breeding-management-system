@@ -9,19 +9,27 @@ from apps.hens.models import Hen
 
 
 class Booking(TimeStampedModel):
-    """STEP1 §4.5 — การจองคิวฝากผสม. State machine: STEP1 §9.1."""
+    """
+    STEP1 §4.5 — การจองคิวฝากผสม, ปรับ field names/status ตาม STEP5 spec.
+    State machine (STEP5):
+        PENDING -> WAITING_PAYMENT -> PAID -> APPROVED -> IN_PROGRESS -> COMPLETED
+        (CANCELLED / REJECTED reachable from any non-terminal state)
+    """
 
     class Status(models.TextChoices):
-        PENDING_PAYMENT = 'PENDING_PAYMENT', 'รอชำระเงินมัดจำ'
-        WAITING_APPROVAL = 'WAITING_APPROVAL', 'รออนุมัติ'
-        APPROVED_LOCKED = 'APPROVED_LOCKED', 'อนุมัติแล้ว/ล็อกคิว'
+        PENDING = 'PENDING', 'รอดำเนินการ'
+        WAITING_PAYMENT = 'WAITING_PAYMENT', 'รอชำระเงิน'
+        PAID = 'PAID', 'ชำระมัดจำแล้ว'
+        APPROVED = 'APPROVED', 'อนุมัติแล้ว/ล็อกคิว'
         IN_PROGRESS = 'IN_PROGRESS', 'กำลังดำเนินการผสม'
         COMPLETED = 'COMPLETED', 'เสร็จสิ้น'
-        REJECTED = 'REJECTED', 'ปฏิเสธ'
         CANCELLED = 'CANCELLED', 'ยกเลิก'
+        REJECTED = 'REJECTED', 'ปฏิเสธ'
 
-    # Statuses that count as "an active claim" on a hen / a queue slot (STEP1 Business Rules #1/#3)
-    ACTIVE_STATUSES = (Status.PENDING_PAYMENT, Status.WAITING_APPROVAL, Status.APPROVED_LOCKED, Status.IN_PROGRESS)
+    # Statuses that count as "an active claim" on a hen / a queue slot (Critical Rules #1/#4)
+    ACTIVE_STATUSES = (
+        Status.PENDING, Status.WAITING_PAYMENT, Status.PAID, Status.APPROVED, Status.IN_PROGRESS,
+    )
 
     class BreedingStage(models.TextChoices):
         RECEIVED_AT_FARM = 'RECEIVED_AT_FARM', 'รับเข้าฟาร์ม'
@@ -31,6 +39,7 @@ class Booking(TimeStampedModel):
         COMPLETED = 'COMPLETED', 'เสร็จสิ้น'
 
     public_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    booking_number = models.CharField(max_length=20, unique=True, editable=False)
 
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='bookings',
@@ -38,19 +47,23 @@ class Booking(TimeStampedModel):
     hen = models.ForeignKey(Hen, on_delete=models.PROTECT, related_name='bookings')
     breeder = models.ForeignKey(Breeder, on_delete=models.PROTECT, related_name='bookings')
 
+    booking_date = models.DateField()
+    # Derived from booking_date (never client-writable) — kept as real columns because the
+    # queue-capacity constraints/lookups below are scoped per (breeder, year, month).
     booking_year = models.SmallIntegerField()
     booking_month = models.SmallIntegerField()
     queue_no = models.SmallIntegerField(blank=True, null=True)
 
-    agreed_price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     deposit_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    balance_due = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING_PAYMENT, db_index=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True)
     current_breeding_stage = models.CharField(
         max_length=20, choices=BreedingStage.choices, blank=True, null=True,
     )
+    note = models.TextField(blank=True, null=True)
 
     requested_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(blank=True, null=True)
@@ -70,9 +83,9 @@ class Booking(TimeStampedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=['hen'],
-                condition=models.Q(status__in=[
-                    'PENDING_PAYMENT', 'WAITING_APPROVAL', 'APPROVED_LOCKED', 'IN_PROGRESS',
-                ]),
+                # Kept as a literal list (not a reference to ACTIVE_STATUSES) because a nested
+                # Meta class body cannot see names from the enclosing Booking class body.
+                condition=models.Q(status__in=['PENDING', 'WAITING_PAYMENT', 'PAID', 'APPROVED', 'IN_PROGRESS']),
                 name='uq_booking_hen_active',
             ),
             models.UniqueConstraint(
@@ -85,13 +98,24 @@ class Booking(TimeStampedModel):
                 condition=models.Q(queue_no__isnull=False),
                 name='uq_booking_queue_slot',
             ),
-            models.CheckConstraint(condition=models.Q(booking_month__gte=1, booking_month__lte=12), name='ck_booking_month_1_12'),
             models.CheckConstraint(
-                condition=models.Q(deposit_amount__gte=0) & models.Q(deposit_amount__lte=models.F('agreed_price')),
+                condition=models.Q(booking_month__gte=1, booking_month__lte=12), name='ck_booking_month_1_12',
+            ),
+            models.CheckConstraint(
+                condition=models.Q(deposit_amount__gte=0) & models.Q(deposit_amount__lte=models.F('price')),
                 name='ck_booking_deposit_between_0_and_price',
             ),
-            models.CheckConstraint(condition=models.Q(amount_paid__gte=0), name='ck_booking_amount_paid_gte_0'),
-            models.CheckConstraint(condition=models.Q(balance_due__gte=0), name='ck_booking_balance_due_gte_0'),
+            models.CheckConstraint(condition=models.Q(paid_amount__gte=0), name='ck_booking_paid_amount_gte_0'),
+            models.CheckConstraint(
+                condition=models.Q(remaining_amount__gte=0), name='ck_booking_remaining_amount_gte_0'
+            ),
+            models.CheckConstraint(
+                condition=models.Q(status__in=[
+                    'PENDING', 'WAITING_PAYMENT', 'PAID', 'APPROVED', 'IN_PROGRESS',
+                    'COMPLETED', 'CANCELLED', 'REJECTED',
+                ]),
+                name='ck_booking_status_valid',
+            ),
         ]
         indexes = [
             models.Index(fields=['breeder', 'booking_year', 'booking_month']),
@@ -102,4 +126,4 @@ class Booking(TimeStampedModel):
         return self.customer_id
 
     def __str__(self):
-        return f'Booking#{self.id} {self.hen.name} x {self.breeder.name} ({self.booking_year}-{self.booking_month:02d})'
+        return f'{self.booking_number} {self.hen.name} x {self.breeder.name} ({self.booking_year}-{self.booking_month:02d})'
