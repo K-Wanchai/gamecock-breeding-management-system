@@ -1,14 +1,14 @@
 from django.contrib import admin
 
-from apps.breeding.models import BreedingTimeline, Egg
+from apps.breeding.models import BreedingEvent, Egg
 
 
-@admin.register(BreedingTimeline)
-class BreedingTimelineAdmin(admin.ModelAdmin):
-    list_display = ('booking', 'stage', 'event_date', 'recorded_by')
-    list_filter = ('stage',)
+@admin.register(BreedingEvent)
+class BreedingEventAdmin(admin.ModelAdmin):
+    list_display = ('booking', 'status', 'event_date', 'recorded_by')
+    list_filter = ('status',)
 
 
 @admin.register(Egg)
 class EggAdmin(admin.ModelAdmin):
-    list_display = ('id', 'booking', 'lay_date', 'egg_count', 'recorded_by')
+    list_display = ('id', 'booking', 'egg_date', 'total_eggs', 'good_eggs', 'bad_eggs', 'recorded_by')

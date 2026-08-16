@@ -29,6 +29,7 @@ class RunningNumberCounter(TimeStampedModel):
         BOOKING_QUEUE = 'BOOKING_QUEUE', 'Booking Number'
         CONTRACT_NO = 'CONTRACT_NO', 'Contract Document Number'
         PEDIGREE_NO = 'PEDIGREE_NO', 'Pedigree Document Number'
+        DELIVERY_NO = 'DELIVERY_NO', 'Delivery Document Number'
         PAYMENT_NO = 'PAYMENT_NO', 'Payment Number'
 
     counter_type = models.CharField(max_length=20, choices=CounterType.choices)

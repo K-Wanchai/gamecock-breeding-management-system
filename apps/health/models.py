@@ -6,19 +6,25 @@ from apps.core.models import TimeStampedModel
 
 
 class HealthRecord(TimeStampedModel):
-    """STEP1 §4.11 — ประวัติสุขภาพลูกไก่."""
+    """STEP1 §4.11 / STEP7 — ประวัติสุขภาพลูกไก่.
+
+    record_date must fall within the chick's life (not before Chick.birth_date, not
+    in the future) — a cross-row rule enforced in the service layer, not by a DB
+    CHECK constraint (Postgres CHECK cannot reference another table's row).
+    """
 
     chick = models.ForeignKey(Chick, on_delete=models.CASCADE, related_name='health_records')
     record_date = models.DateField()
-    weight_grams = models.DecimalField(max_digits=6, decimal_places=1, blank=True, null=True)
-    health_status = models.CharField(max_length=50, blank=True, null=True)
+    weight = models.DecimalField(max_digits=6, decimal_places=1, blank=True, null=True)
     symptom = models.TextField(blank=True, null=True)
-    treatment_note = models.TextField(blank=True, null=True)
+    observation = models.TextField(blank=True, null=True)
+    medicine = models.TextField(blank=True, null=True)
+    remark = models.TextField(blank=True, null=True)
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='health_records_recorded')
 
     class Meta:
         constraints = [
-            models.CheckConstraint(condition=models.Q(weight_grams__gte=0), name='ck_health_weight_gte_0'),
+            models.CheckConstraint(condition=models.Q(weight__gte=0), name='ck_health_weight_gte_0'),
         ]
         ordering = ['record_date']
 

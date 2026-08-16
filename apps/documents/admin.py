@@ -5,6 +5,6 @@ from apps.documents.models import Document
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('document_no', 'document_type', 'booking', 'chick', 'generated_at')
+    list_display = ('document_number', 'document_type', 'booking', 'chick', 'generated_at', 'generated_by')
     list_filter = ('document_type',)
     readonly_fields = ('public_uuid',)
