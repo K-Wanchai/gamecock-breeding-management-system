@@ -17,6 +17,12 @@ api_v1_patterns = [
     path('hens/', include('apps.hens.urls')),
     path('bookings/', include('apps.bookings.urls')),
     path('payments/', include('apps.payments.urls')),
+    path('', include('apps.breeding.urls')),
+    path('hatchings/', include('apps.hatching.urls')),
+    path('chicks/', include('apps.chicks.urls')),
+    path('health-records/', include('apps.health.urls')),
+    path('vaccinations/', include('apps.vaccinations.urls')),
+    path('documents/', include('apps.documents.urls')),
 
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

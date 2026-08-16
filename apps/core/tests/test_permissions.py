@@ -12,7 +12,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.bookings.models import Booking
 from apps.breeders.models import Breeder
-from apps.breeding.models import BreedingTimeline, Egg
+from apps.breeding.models import BreedingEvent, Egg
 from apps.chicks.models import Chick
 from apps.core.permissions import IsAdminRole, IsOwnerOrAdmin
 from apps.documents.models import Document
@@ -50,24 +50,29 @@ class OwnershipChainTests(TestCase):
             payment_number='PM-69-90001', booking=cls.booking, payment_type=Payment.PaymentType.DEPOSIT, amount=1000,
             slip='slips/x.jpg', paid_at=timezone.now(),
         )
-        cls.timeline = BreedingTimeline.objects.create(
-            booking=cls.booking, stage=BreedingTimeline.Stage.RECEIVED_AT_FARM,
+        cls.timeline = BreedingEvent.objects.create(
+            booking=cls.booking, status=BreedingEvent.Status.RECEIVED,
             event_date=date.today(), recorded_by=cls.admin,
         )
-        cls.egg = Egg.objects.create(booking=cls.booking, lay_date=date.today(), egg_count=5, recorded_by=cls.admin)
-        cls.hatching = Hatching.objects.create(
-            egg=cls.egg, hatched_count=3, status=Hatching.Status.HATCHED, recorded_by=cls.admin,
+        cls.egg = Egg.objects.create(
+            booking=cls.booking, total_eggs=5, good_eggs=4, bad_eggs=1, egg_date=date.today(), recorded_by=cls.admin,
         )
-        cls.chick = Chick.objects.create(hatching=cls.hatching, wing_clip_number='TEST-0001', hatch_date=date.today())
+        cls.hatching = Hatching.objects.create(
+            egg=cls.egg, started_at=date.today(), total_eggs=5, hatched_count=3, status=Hatching.Status.HATCHED,
+            recorded_by=cls.admin,
+        )
+        cls.chick = Chick.objects.create(
+            hatching=cls.hatching, booking=cls.booking, wing_clip_number='TEST-0001', birth_date=date.today(),
+        )
         cls.health_record = HealthRecord.objects.create(chick=cls.chick, record_date=date.today(), recorded_by=cls.admin)
         cls.vaccination = Vaccination.objects.create(
-            chick=cls.chick, vaccine_name='ND', vaccine_date=date.today(), administered_by=cls.admin,
+            chick=cls.chick, vaccine_name='ND', vaccination_date=date.today(), dose_number=1, recorded_by=cls.admin,
         )
         cls.contract_doc = Document.objects.create(
-            document_type=Document.DocumentType.CONTRACT, document_no='C-0001', booking=cls.booking,
+            document_type=Document.DocumentType.CONTRACT, document_number='C-0001', booking=cls.booking,
         )
         cls.pedigree_doc = Document.objects.create(
-            document_type=Document.DocumentType.PEDIGREE_CERTIFICATE, document_no='P-0001', chick=cls.chick,
+            document_type=Document.DocumentType.PEDIGREE_CERTIFICATE, document_number='P-0001', chick=cls.chick,
         )
         cls.notification = Notification.objects.create(user=cls.customer_a, notif_type='TEST', message='hi')
 
@@ -85,7 +90,7 @@ class OwnershipChainTests(TestCase):
     def test_payment_ownership_via_booking(self):
         self._assert_owner_only(self.payment)
 
-    def test_breeding_timeline_ownership_via_booking(self):
+    def test_breeding_event_ownership_via_booking(self):
         self._assert_owner_only(self.timeline)
 
     def test_egg_ownership_via_booking(self):

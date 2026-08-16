@@ -45,12 +45,15 @@ class Step2RegressionTests(TestCase):
             booking_number='BK-69-90103', booking_date=date(2026, 8, 1), booking_year=2026, booking_month=8,
             price=1000,
         )
-        egg = Egg.objects.create(booking=booking, lay_date=date.today(), egg_count=2, recorded_by=self.admin)
+        egg = Egg.objects.create(
+            booking=booking, total_eggs=2, good_eggs=2, bad_eggs=0, egg_date=date.today(), recorded_by=self.admin,
+        )
         hatching = Hatching.objects.create(
-            egg=egg, hatched_count=2, status=Hatching.Status.HATCHED, recorded_by=self.admin,
+            egg=egg, started_at=date.today(), total_eggs=2, hatched_count=2, status=Hatching.Status.HATCHED,
+            recorded_by=self.admin,
         )
 
-        chick_one = create_chick(hatching=hatching, hatch_date=date.today())
-        chick_two = create_chick(hatching=hatching, hatch_date=date.today())
+        chick_one = create_chick(hatching_id=hatching.id, birth_date=date.today())
+        chick_two = create_chick(hatching_id=hatching.id, birth_date=date.today())
 
         self.assertNotEqual(chick_one.wing_clip_number, chick_two.wing_clip_number)

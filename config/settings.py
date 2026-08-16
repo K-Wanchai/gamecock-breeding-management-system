@@ -142,6 +142,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# --- Business identity (used on generated PDF documents, STEP8) ------------
+
+FARM_NAME = os.environ.get('FARM_NAME', 'ฟาร์มไก่ชน')
+
 
 # --- Django REST Framework --------------------------------------------------
 

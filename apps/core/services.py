@@ -42,3 +42,11 @@ def format_booking_number(year: int, sequence: int) -> str:
 
 def format_payment_number(year: int, sequence: int) -> str:
     return format_document_no('PM', year, sequence)
+
+
+def format_pedigree_number(year: int, sequence: int) -> str:
+    return format_document_no('PD', year, sequence)
+
+
+def format_delivery_number(year: int, sequence: int) -> str:
+    return format_document_no('DL', year, sequence)

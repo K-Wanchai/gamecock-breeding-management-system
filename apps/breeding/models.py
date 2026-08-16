@@ -5,53 +5,75 @@ from apps.bookings.models import Booking
 from apps.core.models import TimeStampedModel
 
 
-class BreedingTimeline(TimeStampedModel):
-    """STEP1 §4.7 — ไทม์ไลน์สถานะแม่ไก่/การผสม (event log). State machine: STEP1 §9.3."""
+class BreedingEvent(TimeStampedModel):
+    """STEP6 — breeding process timeline (event log) for an approved Booking.
 
-    class Stage(models.TextChoices):
-        RECEIVED_AT_FARM = 'RECEIVED_AT_FARM', 'รับเข้าฟาร์ม'
-        PAIRED = 'PAIRED', 'เข้าคู่ผสม'
-        EGG_LAYING = 'EGG_LAYING', 'ออกไข่'
-        MOVED_TO_INCUBATOR = 'MOVED_TO_INCUBATOR', 'ย้ายเข้าตู้ฟัก'
-        COMPLETED = 'COMPLETED', 'เสร็จสิ้น'
+    Flow: RECEIVED -> BREEDING -> BREEDING_COMPLETED -> WAITING_EGG -> EGG_LAID
+    -> INCUBATION -> HATCHING. Allowed transitions are enforced in
+    apps.breeding.services.transition_breeding_status(), not here — this model
+    only stores the log. Supersedes the STEP1 §4.7/§9.3 5-stage design.
+    """
 
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='timeline_events')
-    stage = models.CharField(max_length=20, choices=Stage.choices)
+    class Status(models.TextChoices):
+        RECEIVED = 'RECEIVED', 'รับแม่ไก่เข้าฟาร์ม'
+        BREEDING = 'BREEDING', 'กำลังผสมพันธุ์'
+        BREEDING_COMPLETED = 'BREEDING_COMPLETED', 'ผสมพันธุ์เสร็จสิ้น'
+        WAITING_EGG = 'WAITING_EGG', 'รอออกไข่'
+        EGG_LAID = 'EGG_LAID', 'ออกไข่แล้ว'
+        INCUBATION = 'INCUBATION', 'เข้าตู้ฟัก'
+        HATCHING = 'HATCHING', 'ฟักไข่'
+
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='breeding_events')
+    status = models.CharField(max_length=20, choices=Status.choices, db_index=True)
     event_date = models.DateField()
-    note = models.TextField(blank=True, null=True)
-    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='timeline_events_recorded')
+    description = models.TextField(blank=True, null=True)
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='breeding_events_recorded',
+    )
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['booking', 'stage'], name='uq_timeline_booking_stage'),
+            # Each stage occurs at most once per booking — also the DB-level backstop
+            # against a duplicate/race submission of the same next event (Global Rule #29).
+            models.UniqueConstraint(fields=['booking', 'status'], name='uq_breeding_event_booking_status'),
         ]
-        ordering = ['event_date']
+        ordering = ['event_date', 'id']
 
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""
         return self.booking.customer_id
 
     def __str__(self):
-        return f'Booking#{self.booking_id} -> {self.stage} ({self.event_date})'
+        return f'Booking#{self.booking_id} -> {self.status} ({self.event_date})'
 
 
 class Egg(TimeStampedModel):
-    """STEP1 §4.8 — ข้อมูลการออกไข่."""
+    """STEP1 §4.8 / STEP6 — ข้อมูลการออกไข่ต่อการจอง (egg batch tracking)."""
 
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='eggs')
-    lay_date = models.DateField()
-    egg_count = models.SmallIntegerField()
-    note = models.TextField(blank=True, null=True)
+    total_eggs = models.SmallIntegerField()
+    good_eggs = models.SmallIntegerField(default=0)
+    bad_eggs = models.SmallIntegerField(default=0)
+    egg_date = models.DateField()
+    incubation_date = models.DateField(blank=True, null=True)
+    remark = models.TextField(blank=True, null=True)
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='eggs_recorded')
 
     class Meta:
         constraints = [
-            models.CheckConstraint(condition=models.Q(egg_count__gte=0), name='ck_egg_count_gte_0'),
+            models.CheckConstraint(condition=models.Q(total_eggs__gte=0), name='ck_egg_total_eggs_gte_0'),
+            models.CheckConstraint(condition=models.Q(good_eggs__gte=0), name='ck_egg_good_eggs_gte_0'),
+            models.CheckConstraint(condition=models.Q(bad_eggs__gte=0), name='ck_egg_bad_eggs_gte_0'),
+            models.CheckConstraint(
+                condition=models.Q(total_eggs__gte=models.F('good_eggs') + models.F('bad_eggs')),
+                name='ck_egg_good_plus_bad_lte_total',
+            ),
         ]
+        ordering = ['-egg_date', '-id']
 
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""
         return self.booking.customer_id
 
     def __str__(self):
-        return f'Egg batch#{self.id} booking#{self.booking_id} ({self.egg_count} eggs)'
+        return f'Egg batch#{self.id} booking#{self.booking_id} ({self.total_eggs} eggs)'
