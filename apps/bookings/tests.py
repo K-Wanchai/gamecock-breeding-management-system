@@ -289,6 +289,19 @@ class BookingCRUDTests(APITestCase):
         response = self.client.get(self.list_url, {'search': booking.booking_number})
         self.assertEqual(response.data['count'], 1)
 
+    def test_filter_by_booking_date(self):
+        # STEP18 — exact-date search on the customer bookings list.
+        other_hen = Hen.objects.create(owner=self.customer, name='แม่ไก่จองวันอื่น', status=Hen.Status.ACTIVE)
+        other_date = FUTURE_DATE + timedelta(days=5)
+        services.create_booking(customer=self.customer, hen=self.hen, breeder=self.breeder, booking_date=FUTURE_DATE)
+        services.create_booking(customer=self.customer, hen=other_hen, breeder=self.breeder, booking_date=other_date)
+
+        self.client.force_authenticate(self.customer)
+        response = self.client.get(self.list_url, {'booking_date': FUTURE_DATE.isoformat()})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['booking_date'], FUTURE_DATE.isoformat())
+
 
 class ConcurrentBookingTests(TransactionTestCase):
     """

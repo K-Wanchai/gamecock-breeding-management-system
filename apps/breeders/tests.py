@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import User
-from apps.breeders.models import Breeder
+from apps.breeders.models import Breeder, BreederMonthlyQuota
 
 
 def error_fields(response):
@@ -139,6 +139,25 @@ class BreederCRUDTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Breeder.objects.filter(pk=self.breeder.id).exists())
 
+    def test_delete_breeder_with_existing_booking_returns_clean_conflict(self):
+        # Booking.breeder is on_delete=PROTECT — this must surface as a clean 409,
+        # not an unhandled ProtectedError (raw 500).
+        from apps.bookings.models import Booking
+        from apps.hens.models import Hen
+
+        hen = Hen.objects.create(owner=self.customer, name='แม่ไก่ทดสอบลบพ่อพันธุ์', status=Hen.Status.ACTIVE)
+        Booking.objects.create(
+            customer=self.customer, hen=hen, breeder=self.breeder,
+            booking_date='2026-09-01', booking_year=2026, booking_month=9,
+            price=3000, deposit_amount=900, paid_amount=0, remaining_amount=3000,
+            status=Booking.Status.WAITING_PAYMENT, booking_number='BK-PROTECT-TEST',
+        )
+        self.client.force_authenticate(self.admin)
+        response = self.client.delete(self.detail_url(self.breeder.id))
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT, response.data)
+        self.assertEqual(response.data['error']['code'], 'BREEDER_HAS_BOOKINGS')
+        self.assertTrue(Breeder.objects.filter(pk=self.breeder.id).exists())
+
     # --- Validation ---
 
     def test_negative_service_rate_rejected(self):
@@ -199,3 +218,108 @@ class BreederCRUDTests(APITestCase):
         response = self.client.patch(self.detail_url(self.breeder.id), {'image': image}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('image', error_fields(response))
+
+
+class BreederMonthlyQuotaCRUDTests(APITestCase):
+    """STEP19 — admin-only CRUD for BreederMonthlyQuota (previously Django-admin-only)."""
+
+    def setUp(self):
+        self.list_url = reverse('breeders:breeder-quota-list')
+        self.admin = User.objects.create_user(username='quota_admin', password='x', role=User.Role.ADMIN)
+        self.customer = User.objects.create_user(username='quota_customer', password='x', role=User.Role.CUSTOMER)
+        self.breeder = Breeder.objects.create(name='พ่อพันธุ์โควตา', service_rate=2000, created_by=self.admin)
+
+    def detail_url(self, pk):
+        return reverse('breeders:breeder-quota-detail', args=[pk])
+
+    def test_list_requires_authentication(self):
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_customer_cannot_list(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_customer_cannot_create(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.post(self.list_url, {'breeder': self.breeder.id, 'year': 2026, 'month': 9, 'max_slots': 5})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_can_create(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(
+            self.list_url, {'breeder': self.breeder.id, 'year': 2026, 'month': 9, 'max_slots': 5, 'is_open': True},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertEqual(response.data['remaining_slots'], 5)
+        self.assertEqual(response.data['breeder_name'], 'พ่อพันธุ์โควตา')
+
+    def test_admin_can_update(self):
+        quota = BreederMonthlyQuota.objects.create(breeder=self.breeder, year=2026, month=9, max_slots=5)
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(self.detail_url(quota.id), {'max_slots': 8})
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        quota.refresh_from_db()
+        self.assertEqual(quota.max_slots, 8)
+
+    def test_admin_can_delete(self):
+        quota = BreederMonthlyQuota.objects.create(breeder=self.breeder, year=2026, month=9, max_slots=5)
+        self.client.force_authenticate(self.admin)
+        response = self.client.delete(self.detail_url(quota.id))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(BreederMonthlyQuota.objects.filter(pk=quota.id).exists())
+
+    def test_duplicate_breeder_year_month_rejected(self):
+        BreederMonthlyQuota.objects.create(breeder=self.breeder, year=2026, month=9, max_slots=5)
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(
+            self.list_url, {'breeder': self.breeder.id, 'year': 2026, 'month': 9, 'max_slots': 3},
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_month_rejected(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(
+            self.list_url, {'breeder': self.breeder.id, 'year': 2026, 'month': 13, 'max_slots': 5},
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('month', error_fields(response))
+
+    def test_negative_max_slots_rejected(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(
+            self.list_url, {'breeder': self.breeder.id, 'year': 2026, 'month': 9, 'max_slots': -1},
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_remaining_slots_reflects_locked_bookings(self):
+        from apps.bookings.models import Booking
+        from apps.hens.models import Hen
+
+        quota = BreederMonthlyQuota.objects.create(breeder=self.breeder, year=2026, month=9, max_slots=3)
+        hen = Hen.objects.create(owner=self.customer, name='แม่ไก่โควตา', status=Hen.Status.ACTIVE)
+        Booking.objects.create(
+            customer=self.customer, hen=hen, breeder=self.breeder,
+            booking_date='2026-09-05', booking_year=2026, booking_month=9, queue_no=1,
+            price=2000, deposit_amount=600, paid_amount=2000, remaining_amount=0,
+            status=Booking.Status.APPROVED, booking_number='BK-QUOTA-TEST',
+        )
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(self.detail_url(quota.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['remaining_slots'], 2)  # 3 max - 1 locked
+
+    def test_closed_quota_has_zero_remaining_slots(self):
+        quota = BreederMonthlyQuota.objects.create(breeder=self.breeder, year=2026, month=9, max_slots=5, is_open=False)
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(self.detail_url(quota.id))
+        self.assertEqual(response.data['remaining_slots'], 0)
+
+    def test_filter_by_breeder(self):
+        other_breeder = Breeder.objects.create(name='พ่อพันธุ์อื่น', service_rate=1000, created_by=self.admin)
+        BreederMonthlyQuota.objects.create(breeder=self.breeder, year=2026, month=9, max_slots=5)
+        BreederMonthlyQuota.objects.create(breeder=other_breeder, year=2026, month=9, max_slots=2)
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(self.list_url, {'breeder': self.breeder.id})
+        self.assertEqual(response.data['count'], 1)
