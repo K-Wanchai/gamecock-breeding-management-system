@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'apps.vaccinations',
     'apps.documents',
     'apps.notifications',
+    'apps.dashboard',
     'apps.reports',
 ]
 
@@ -260,6 +261,16 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@gamecock-breeding.local')
 PASSWORD_RESET_TIMEOUT = int(os.environ.get('PASSWORD_RESET_TIMEOUT_SECONDS', 3600))
+
+
+# --- LINE Messaging API (STEP17) --------------------------------------------
+# LINE_CHANNEL_SECRET signs every webhook LINE sends us (apps.notifications.services.
+# verify_line_signature); blank in dev/test means the webhook always rejects incoming
+# requests rather than accepting unverifiable ones. LINE_CHANNEL_ACCESS_TOKEN would be
+# needed to reply/push messages back through LINE, which this step doesn't do yet.
+
+LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET', '')
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN', '')
 
 
 # --- Logging (Global Rule #15) ---------------------------------------------

@@ -19,7 +19,7 @@ class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
 
     permission_classes = (BookingActionPermission,)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filterset_fields = ('status', 'breeder', 'booking_year', 'booking_month')
+    filterset_fields = ('status', 'breeder', 'booking_year', 'booking_month', 'booking_date')
     search_fields = ('booking_number', 'hen__name', 'breeder__name')
     ordering_fields = ('booking_date', 'created_at', 'status')
     ordering = ('-created_at',)

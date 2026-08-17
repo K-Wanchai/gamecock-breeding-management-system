@@ -1,0 +1,24 @@
+import { api } from '@/lib/api/client'
+import type { Booking, BookingCreatePayload, BookingListParams } from '@/types/booking'
+import type { PaginatedResponse } from '@/types/api'
+
+export async function listBookings(params: BookingListParams): Promise<PaginatedResponse<Booking>> {
+  const { data } = await api.get<PaginatedResponse<Booking>>('/bookings/', { params })
+  return data
+}
+
+export async function getBooking(id: number): Promise<Booking> {
+  const { data } = await api.get<Booking>(`/bookings/${id}/`)
+  return data
+}
+
+/** price/deposit_amount are never sent by the client — the response is the server-computed snapshot. */
+export async function createBooking(payload: BookingCreatePayload): Promise<Booking> {
+  const { data } = await api.post<Booking>('/bookings/', payload)
+  return data
+}
+
+export async function cancelBooking(id: number, reason?: string): Promise<Booking> {
+  const { data } = await api.patch<Booking>(`/bookings/${id}/cancel/`, { reason })
+  return data
+}
