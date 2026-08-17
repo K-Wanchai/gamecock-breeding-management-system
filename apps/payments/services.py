@@ -79,6 +79,9 @@ def approve_payment(*, payment_id, admin, remark: str = '') -> Payment:
         booking.status = Booking.Status.PAID
     booking.save(update_fields=['paid_amount', 'remaining_amount', 'status', 'updated_at'])
 
+    from apps.notifications import services as notification_services  # local import: avoids a module-load-time cycle
+    transaction.on_commit(lambda: notification_services.notify_payment_approved(payment))
+
     return payment
 
 
@@ -97,4 +100,8 @@ def reject_payment(*, payment_id, admin, remark: str = '') -> Payment:
     payment.verified_at = timezone.now()
     payment.remark = remark
     payment.save(update_fields=['status', 'verified_by', 'verified_at', 'remark', 'updated_at'])
+
+    from apps.notifications import services as notification_services  # local import: avoids a module-load-time cycle
+    transaction.on_commit(lambda: notification_services.notify_payment_rejected(payment))
+
     return payment

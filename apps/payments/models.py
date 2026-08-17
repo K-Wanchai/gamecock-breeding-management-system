@@ -47,6 +47,10 @@ class Payment(TimeStampedModel):
                 name='ck_payment_status_valid',
             ),
         ]
+        # STEP9 — Payment/Revenue Report date-range filtering (date_from/date_to on paid_at).
+        indexes = [
+            models.Index(fields=['paid_at']),
+        ]
 
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""

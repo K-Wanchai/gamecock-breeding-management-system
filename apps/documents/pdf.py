@@ -166,7 +166,11 @@ def render_document_pdf(document, chick) -> bytes:
         ('สายพันธุ์ / Breed', hen.breed or '-'),
     ], styles)
 
-    events = list(booking.breeding_events.order_by('event_date', 'id'))
+    # .all() (not .order_by(...)) so this actually uses the prefetch_related()
+    # cache from generate_document() instead of re-querying — BreedingEvent's
+    # own Meta.ordering is already ['event_date', 'id'], so the result order
+    # is unchanged.
+    events = list(booking.breeding_events.all())
     story += _history_section(
         'ประวัติการผสมพันธุ์ / Breeding History', ['สถานะ / Status', 'วันที่ / Date'],
         [(e.get_status_display(), e.event_date.isoformat()) for e in events], styles,

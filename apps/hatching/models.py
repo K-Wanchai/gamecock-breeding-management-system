@@ -55,6 +55,10 @@ class Hatching(TimeStampedModel):
             ),
         ]
         ordering = ['-started_at', '-id']
+        # STEP9 — Hatching Report date-range filtering (date_from/date_to on started_at).
+        indexes = [
+            models.Index(fields=['started_at']),
+        ]
 
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""

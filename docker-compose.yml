@@ -1,0 +1,43 @@
+# Local/production-shaped stack: the Django app (Dockerfile) + PostgreSQL.
+# Usage: cp .env.example .env, fill in real values, then:
+#   docker compose up --build -d
+#   docker compose exec web python manage.py migrate
+#   docker compose exec web python manage.py createsuperuser
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-gamecock_breeding_db}
+      POSTGRES_USER: ${DB_USER:-gamecock_app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-gamecock_app} -d ${DB_NAME:-gamecock_breeding_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Overrides .env's DB_HOST=localhost — inside the compose network the
+      # database is reachable at the service name, not localhost.
+      DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+
+volumes:
+  postgres_data:
+  media_data:
+  static_data:

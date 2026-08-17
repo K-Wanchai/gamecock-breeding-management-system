@@ -16,7 +16,19 @@ load_dotenv(BASE_DIR / '.env')
 
 
 def env_bool(name, default=False):
-    return os.environ.get(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
+    # A key present in .env but left blank (e.g. `DJANGO_SECURE_SSL_REDIRECT=`, the
+    # .env.example convention for "defaults to something computed, override to set")
+    # must fall back to `default` exactly like an absent key — os.environ.get()'s
+    # own fallback only kicks in when the key is missing entirely, not when present-but-empty.
+    raw = os.environ.get(name, '').strip()
+    if not raw:
+        return default
+    return raw.lower() in ('1', 'true', 'yes', 'on')
+
+
+def env_int(name, default):
+    raw = os.environ.get(name, '').strip()
+    return int(raw) if raw else default
 
 
 def env_list(name, default=''):
@@ -109,6 +121,9 @@ DATABASES = {
         'PASSWORD': os.environ['DB_PASSWORD'],
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
+        # STEP10 — persistent connections in production (0 = close every request,
+        # Django's default). Safe to leave at 0 for local dev/tests.
+        'CONN_MAX_AGE': int(os.environ.get('DB_CONN_MAX_AGE', 60)),
     }
 }
 
@@ -167,6 +182,22 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'apps.core.exceptions.standard_exception_handler',
     'DATETIME_FORMAT': 'iso-8601',
+    # STEP10 — baseline abuse protection. Scoped rates below back the
+    # throttle_scope set on LoginView/RegisterView/PasswordReset*View
+    # (apps.accounts.views) and LineWebhookView (apps.notifications.views);
+    # anon/user rates are the global fallback for every other endpoint.
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': os.environ.get('THROTTLE_RATE_ANON', '30/min'),
+        'user': os.environ.get('THROTTLE_RATE_USER', '120/min'),
+        'login': os.environ.get('THROTTLE_RATE_LOGIN', '10/min'),
+        'register': os.environ.get('THROTTLE_RATE_REGISTER', '10/min'),
+        'password_reset': os.environ.get('THROTTLE_RATE_PASSWORD_RESET', '5/min'),
+        'line_webhook': os.environ.get('THROTTLE_RATE_LINE_WEBHOOK', '120/min'),
+    },
 }
 
 SIMPLE_JWT = {
@@ -191,6 +222,29 @@ SPECTACULAR_SETTINGS = {
 # --- CORS (Global architecture: separate frontend origin) ------------------
 
 CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS')
+
+
+# --- Production security hardening (STEP10) ---------------------------------
+# Defaults follow `not DEBUG` (same switch pattern EMAIL_BACKEND already uses
+# above) so local dev/tests (.env has DJANGO_DEBUG=True) are unaffected and
+# get none of this; a real deployment runs with DJANGO_DEBUG unset/False and
+# picks all of it up automatically. Each one is still independently
+# env-overridable for deployments behind a TLS-terminating proxy or similar.
+
+SECURE_SSL_REDIRECT = env_bool('DJANGO_SECURE_SSL_REDIRECT', not DEBUG)
+SESSION_COOKIE_SECURE = env_bool('DJANGO_SESSION_COOKIE_SECURE', not DEBUG)
+CSRF_COOKIE_SECURE = env_bool('DJANGO_CSRF_COOKIE_SECURE', not DEBUG)
+SECURE_CONTENT_TYPE_NOSNIFF = env_bool('DJANGO_SECURE_CONTENT_TYPE_NOSNIFF', True)
+X_FRAME_OPTIONS = os.environ.get('DJANGO_X_FRAME_OPTIONS', 'DENY')
+SECURE_HSTS_SECONDS = env_int('DJANGO_SECURE_HSTS_SECONDS', 0 if DEBUG else 31536000)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
+SECURE_HSTS_PRELOAD = env_bool('DJANGO_SECURE_HSTS_PRELOAD', not DEBUG)
+
+
+# --- LINE Notification (STEP9) ----------------------------------------------
+
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN', '')
+LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET', '')
 
 
 # --- Email (used for password reset — STEP3. Real SMTP/LINE delivery is a later

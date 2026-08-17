@@ -24,7 +24,11 @@ api_v1_patterns = [
     path('vaccinations/', include('apps.vaccinations.urls')),
     path('documents/', include('apps.documents.urls')),
     path('notifications/', include('apps.notifications.urls')),
+<<<<<<< HEAD
     path('dashboard/', include('apps.dashboard.urls')),
+=======
+    path('', include('apps.reports.urls')),
+>>>>>>> origin/main
 
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
