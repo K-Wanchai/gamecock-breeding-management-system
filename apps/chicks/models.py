@@ -42,6 +42,12 @@ class Chick(TimeStampedModel):
     color_note = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.ALIVE, db_index=True)
 
+    class Meta:
+        # STEP9 — Chick Report date-range filtering (date_from/date_to on birth_date).
+        indexes = [
+            models.Index(fields=['birth_date']),
+        ]
+
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""
         return self.hatching.egg.booking.customer_id

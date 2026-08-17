@@ -16,6 +16,11 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True, null=True, unique=True)
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.CUSTOMER, db_index=True)
     line_user_id = models.CharField(max_length=64, blank=True, null=True, unique=True)
+    # STEP9 — self-service LINE account linking (apps.notifications.services.generate_line_link_code /
+    # process_line_webhook_event): a short-lived 6-digit code the user sends as a LINE message to
+    # prove they control that LINE account, letting the webhook set line_user_id above.
+    line_link_code = models.CharField(max_length=6, blank=True, null=True, db_index=True)
+    line_link_code_expires_at = models.DateTimeField(blank=True, null=True)
 
     updated_at = models.DateTimeField(auto_now=True)
 

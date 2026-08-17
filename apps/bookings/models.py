@@ -119,6 +119,8 @@ class Booking(TimeStampedModel):
         ]
         indexes = [
             models.Index(fields=['breeder', 'booking_year', 'booking_month']),
+            # STEP9 — Booking Report / Search date-range filtering (date_from/date_to on booking_date).
+            models.Index(fields=['booking_date']),
         ]
 
     def get_owner_user_id(self):
