@@ -38,6 +38,10 @@ class BreedingEvent(TimeStampedModel):
             models.UniqueConstraint(fields=['booking', 'status'], name='uq_breeding_event_booking_status'),
         ]
         ordering = ['event_date', 'id']
+        # STEP9 — Breeding Report date-range filtering (date_from/date_to on event_date).
+        indexes = [
+            models.Index(fields=['event_date']),
+        ]
 
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""
@@ -70,6 +74,10 @@ class Egg(TimeStampedModel):
             ),
         ]
         ordering = ['-egg_date', '-id']
+        # STEP9 — Egg Report date-range filtering (date_from/date_to on egg_date).
+        indexes = [
+            models.Index(fields=['egg_date']),
+        ]
 
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""

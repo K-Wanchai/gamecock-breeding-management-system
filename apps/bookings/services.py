@@ -124,6 +124,10 @@ def approve_booking(*, booking_id, admin) -> Booking:
     booking.approved_by = admin
     booking.approved_at = timezone.now()
     booking.save(update_fields=['status', 'approved_by', 'approved_at', 'updated_at'])
+
+    from apps.notifications import services as notification_services  # local import: avoids a module-load-time cycle
+    transaction.on_commit(lambda: notification_services.notify_booking_approved(booking))
+
     return booking
 
 
@@ -159,4 +163,8 @@ def cancel_booking(*, booking_id, actor, reason: str = '') -> Booking:
     # A cancelled booking must never end up with an approved payment later (Critical
     # Rule #7) — any submission still awaiting review is cancelled along with it.
     booking.payments.filter(status=Payment.Status.PENDING).update(status=Payment.Status.CANCELLED)
+
+    from apps.notifications import services as notification_services  # local import: avoids a module-load-time cycle
+    transaction.on_commit(lambda: notification_services.notify_booking_cancelled(booking))
+
     return booking

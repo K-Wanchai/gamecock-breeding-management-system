@@ -37,8 +37,14 @@ def generate_document(*, document_type: str, chick_id, actor) -> Document:
         )
 
     try:
+        # STEP10 — prefetch_related() added alongside the existing select_related()
+        # chain: render_document_pdf() (apps/documents/pdf.py) reads
+        # booking.breeding_events / chick.health_records / chick.vaccinations,
+        # which were previously 3 unprefetched queries per PDF generated.
         chick = Chick.objects.select_for_update().select_related(
             'hatching__egg__booking__customer', 'hatching__egg__booking__breeder', 'hatching__egg__booking__hen',
+        ).prefetch_related(
+            'hatching__egg__booking__breeding_events', 'health_records', 'vaccinations',
         ).get(pk=chick_id)
     except Chick.DoesNotExist:
         raise AppError('CHICK_NOT_FOUND', 'Chick not found.', http_status=404)
