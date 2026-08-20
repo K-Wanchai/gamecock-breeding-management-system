@@ -23,12 +23,6 @@ class Notification(TimeStampedModel):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING, db_index=True)
     sent_at = models.DateTimeField(blank=True, null=True)
     error_note = models.CharField(max_length=255, blank=True, null=True)
-<<<<<<< HEAD
-    # How many delivery attempts have been made for a FAILED/PENDING notification —
-    # not yet driven by any retry job in this step, but the column needs to exist so
-    # that piece can be added later without another migration touching this table.
-    retry_count = models.PositiveSmallIntegerField(default=0)
-=======
     # STEP9 — number of retry attempts made via apps.notifications.services.retry_notification();
     # capped at MAX_RETRY_ATTEMPTS there (defense-in-depth backstop is the CheckConstraint below).
     retry_count = models.SmallIntegerField(default=0)
@@ -37,7 +31,6 @@ class Notification(TimeStampedModel):
         constraints = [
             models.CheckConstraint(condition=models.Q(retry_count__gte=0), name='ck_notification_retry_count_gte_0'),
         ]
->>>>>>> origin/main
 
     def get_owner_user_id(self):
         """STEP1 §12 Data Ownership Matrix — used by apps.core.permissions.IsOwnerOrAdmin."""
@@ -45,31 +38,3 @@ class Notification(TimeStampedModel):
 
     def __str__(self):
         return f'{self.notif_type} -> {self.user.username} ({self.status})'
-
-
-class LineLinkCode(TimeStampedModel):
-    """
-    STEP17 — a short-lived 6-digit code a logged-in customer requests, then sends as a
-    message to the LINE Official Account so apps.notifications.services.
-    process_line_webhook_event() can identify which User to attach the resulting LINE
-    userId to (the webhook only ever sees the message text + a LINE userId, never one
-    of our User ids). `code` is only unique while unused — once consumed (or expired
-    and superseded by a fresh request), the value can be issued again.
-    """
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='line_link_codes',
-    )
-    code = models.CharField(max_length=6, db_index=True)
-    expires_at = models.DateTimeField()
-    used_at = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['code'], condition=models.Q(used_at__isnull=True), name='uq_line_link_code_active',
-            ),
-        ]
-
-    def __str__(self):
-        return f'{self.code} -> {self.user.username}'

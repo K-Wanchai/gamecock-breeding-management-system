@@ -22,6 +22,7 @@ import {
 import { useCreatePayment } from '@/hooks/use-payments'
 import { PAYMENT_TYPE_LABEL } from '@/components/payments/payment-status-badge'
 import { toastApiError } from '@/lib/toast'
+import { validateImageFile } from '@/lib/validate-image-file'
 import type { Booking } from '@/types/booking'
 import type { PaymentFormValues, PaymentType } from '@/types/payment'
 
@@ -58,6 +59,14 @@ export function PaymentFormDialog({ open, onOpenChange, booking }: PaymentFormDi
 
   function handleSlipChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
+    if (file) {
+      const error = validateImageFile(file)
+      if (error) {
+        toast.error(error)
+        event.target.value = ''
+        return
+      }
+    }
     setForm((prev) => ({ ...prev, slip: file }))
     setPreviewUrl(file ? URL.createObjectURL(file) : null)
   }
@@ -151,6 +160,7 @@ export function PaymentFormDialog({ open, onOpenChange, booking }: PaymentFormDi
                 type="number"
                 step="0.01"
                 min="0.01"
+                max={booking.remaining_amount}
                 value={form.amount}
                 onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
                 required
@@ -161,6 +171,7 @@ export function PaymentFormDialog({ open, onOpenChange, booking }: PaymentFormDi
               <Input
                 id="paid_at"
                 type="datetime-local"
+                max={nowLocal()}
                 value={form.paid_at}
                 onChange={(e) => setForm((prev) => ({ ...prev, paid_at: e.target.value }))}
                 required

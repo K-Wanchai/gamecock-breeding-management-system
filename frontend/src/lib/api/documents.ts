@@ -1,11 +1,16 @@
 import { api } from '@/lib/api/client'
-import type { Document, DocumentListParams } from '@/types/document'
+import type { Document, DocumentGeneratePayload, DocumentListParams } from '@/types/document'
 import type { PaginatedResponse } from '@/types/api'
 
 export async function listDocuments(
   params: DocumentListParams,
 ): Promise<PaginatedResponse<Document>> {
   const { data } = await api.get<PaginatedResponse<Document>>('/documents/', { params })
+  return data
+}
+
+export async function generateDocument(payload: DocumentGeneratePayload): Promise<Document> {
+  const { data } = await api.post<Document>('/documents/', payload)
   return data
 }
 
@@ -25,4 +30,15 @@ export async function downloadDocument(id: number, filename: string): Promise<vo
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(blobUrl)
+}
+
+/**
+ * Same authenticated fetch as downloadDocument, but hands back the blob URL to open
+ * in a new tab instead of forcing a save — the caller is responsible for revoking it
+ * once the tab has had a chance to load (a short delay, since revoking immediately
+ * can race the new tab's fetch of the blob: URL).
+ */
+export async function previewDocumentUrl(id: number): Promise<string> {
+  const response = await api.get(`/documents/${id}/download/`, { responseType: 'blob' })
+  return URL.createObjectURL(response.data as Blob)
 }

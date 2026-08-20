@@ -75,7 +75,6 @@ INSTALLED_APPS = [
     'apps.vaccinations',
     'apps.documents',
     'apps.notifications',
-    'apps.dashboard',
     'apps.reports',
 ]
 

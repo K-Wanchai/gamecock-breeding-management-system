@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { useChicksQuery } from '@/hooks/use-chicks'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
@@ -45,7 +46,7 @@ export function ChicksPage() {
   const [status, setStatus] = useState<ChickStatus | 'ALL'>('ALL')
   const debouncedSearch = useDebouncedValue(search)
 
-  const { data, isLoading } = useChicksQuery({
+  const { data, isLoading, isError, refetch } = useChicksQuery({
     page,
     search: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
@@ -87,6 +88,8 @@ export function ChicksPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ยังไม่มีข้อมูลลูกไก่</p>
       ) : (

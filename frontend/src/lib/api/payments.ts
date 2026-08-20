@@ -20,3 +20,14 @@ export async function createPayment(
   const { data } = await api.post<Payment>('/payments/', formData)
   return data
 }
+
+/** ADMIN only — requires the payment to be PENDING (apps.payments.services.approve_payment/reject_payment). */
+export async function approvePayment(id: number, remark?: string): Promise<Payment> {
+  const { data } = await api.patch<Payment>(`/payments/${id}/approve/`, { remark })
+  return data
+}
+
+export async function rejectPayment(id: number, remark?: string): Promise<Payment> {
+  const { data } = await api.patch<Payment>(`/payments/${id}/reject/`, { remark })
+  return data
+}

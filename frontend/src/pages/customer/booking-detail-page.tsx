@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { PaymentStatusBadge, PAYMENT_TYPE_LABEL } from '@/components/payments/payment-status-badge'
 import { PaymentFormDialog } from '@/components/payments/payment-form-dialog'
@@ -47,13 +48,16 @@ export function BookingDetailPage() {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
 
-  const { data: booking, isLoading } = useBookingQuery(bookingId)
+  const { data: booking, isLoading, isError, refetch } = useBookingQuery(bookingId)
   const cancelBooking = useCancelBooking()
   const { data: payments } = usePaymentsQuery({ booking: bookingId })
   const { data: breedingEvents } = useBreedingEventsQuery({ booking: bookingId })
 
-  if (isLoading || !booking) {
+  if (isLoading) {
     return <SectionLoading />
+  }
+  if (isError || !booking) {
+    return <QueryError onRetry={refetch} />
   }
 
   const canCancel = CUSTOMER_CANCELLABLE_STATUSES.includes(booking.status)

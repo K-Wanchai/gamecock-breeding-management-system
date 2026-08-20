@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { BreederQuotaFormDialog } from '@/components/breeders/breeder-quota-form-dialog'
 import { useBreederQuery } from '@/hooks/use-breeders'
 import { useBreederQuotasQuery, useDeleteBreederQuota } from '@/hooks/use-breeder-quotas'
@@ -54,7 +55,7 @@ export function AdminBreederQuotasPage() {
 
   const { data: breeder } = useBreederQuery(breederId)
 
-  const { data, isLoading } = useBreederQuotasQuery({ breeder: breederId })
+  const { data, isLoading, isError, refetch } = useBreederQuotasQuery({ breeder: breederId })
   const deleteQuota = useDeleteBreederQuota()
 
   function openCreate() {
@@ -103,6 +104,8 @@ export function AdminBreederQuotasPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ยังไม่มีการตั้งค่าโควตารายเดือน</p>
       ) : (

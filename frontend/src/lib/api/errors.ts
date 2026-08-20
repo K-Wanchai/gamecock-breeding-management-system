@@ -37,11 +37,11 @@ export function normalizeApiError(error: unknown): ApiError {
   const axiosError = error as AxiosError
 
   if (!axiosError?.isAxiosError) {
-    return new ApiError('UNKNOWN_ERROR', 'An unexpected error occurred.')
+    return new ApiError('UNKNOWN_ERROR', 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ')
   }
 
   if (!axiosError.response) {
-    return new ApiError('NETWORK_ERROR', 'Could not reach the server. Check your connection.')
+    return new ApiError('NETWORK_ERROR', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่อของคุณ')
   }
 
   const { status, data } = axiosError.response
@@ -50,7 +50,7 @@ export function normalizeApiError(error: unknown): ApiError {
     return new ApiError(data.error.code, data.error.message, status, data.error.details)
   }
 
-  return new ApiError('UNKNOWN_ERROR', axiosError.message || 'Request failed.', status)
+  return new ApiError('UNKNOWN_ERROR', axiosError.message || 'คำขอไม่สำเร็จ', status)
 }
 
 /**

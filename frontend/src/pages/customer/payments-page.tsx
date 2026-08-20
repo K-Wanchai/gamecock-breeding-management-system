@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { PaymentStatusBadge, PAYMENT_TYPE_LABEL } from '@/components/payments/payment-status-badge'
 import { usePaymentsQuery } from '@/hooks/use-payments'
@@ -39,7 +40,7 @@ export function PaymentsPage() {
   const [status, setStatus] = useState<PaymentStatus | 'ALL'>('ALL')
   const debouncedSearch = useDebouncedValue(search)
 
-  const { data, isLoading } = usePaymentsQuery({
+  const { data, isLoading, isError, refetch } = usePaymentsQuery({
     page,
     search: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
@@ -81,6 +82,8 @@ export function PaymentsPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ยังไม่มีการชำระเงิน</p>
       ) : (

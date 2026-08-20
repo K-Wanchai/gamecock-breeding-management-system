@@ -34,3 +34,17 @@ export interface Hatching {
 export interface HatchingListParams {
   egg?: number
 }
+
+export interface HatchingStartPayload {
+  egg: number
+  started_at: string
+  remark?: string
+}
+
+export interface HatchingCompletePayload {
+  completed_at: string
+  hatched_count: number
+  failed_count?: number
+  survival_count?: number
+  remark?: string
+}

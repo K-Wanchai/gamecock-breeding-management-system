@@ -22,3 +22,9 @@ export async function cancelBooking(id: number, reason?: string): Promise<Bookin
   const { data } = await api.patch<Booking>(`/bookings/${id}/cancel/`, { reason })
   return data
 }
+
+/** ADMIN only — requires the booking to be PAID; locks a queue slot (apps.bookings.services.approve_booking). */
+export async function approveBooking(id: number): Promise<Booking> {
+  const { data } = await api.patch<Booking>(`/bookings/${id}/approve/`)
+  return data
+}

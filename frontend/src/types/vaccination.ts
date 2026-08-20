@@ -18,5 +18,16 @@ export interface Vaccination {
 }
 
 export interface VaccinationListParams {
+  page?: number
   chick?: number
+  search?: string
+}
+
+/** age_days is never client-supplied — the server computes it from vaccination_date - chick.birth_date. */
+export interface VaccinationCreatePayload {
+  chick: number
+  vaccine_name: string
+  vaccination_date: string
+  dose_number: number
+  remark?: string
 }

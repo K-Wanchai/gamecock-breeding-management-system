@@ -8,7 +8,7 @@ export function AppLayout({ role }: { role: Role }) {
     <div className="flex h-svh w-full">
       <Sidebar role={role} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Navbar />
+        <Navbar role={role} />
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>

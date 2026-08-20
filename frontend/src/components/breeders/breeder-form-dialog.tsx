@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog'
 import { useCreateBreeder, useUpdateBreeder } from '@/hooks/use-breeders'
 import { toastApiError } from '@/lib/toast'
+import { validateImageFile } from '@/lib/validate-image-file'
 import type { Breeder, BreederFormValues } from '@/types/breeder'
 
 const EMPTY_FORM: BreederFormValues = {
@@ -71,6 +72,14 @@ export function BreederFormDialog({ open, onOpenChange, breeder }: BreederFormDi
 
   function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
+    if (file) {
+      const error = validateImageFile(file)
+      if (error) {
+        toast.error(error)
+        event.target.value = ''
+        return
+      }
+    }
     setForm((prev) => ({ ...prev, image: file }))
     setPreviewUrl(file ? URL.createObjectURL(file) : (breeder?.image ?? null))
   }

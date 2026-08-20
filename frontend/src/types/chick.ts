@@ -45,3 +45,12 @@ export interface ChickListParams {
   gender?: ChickGender | ''
   search?: string
 }
+
+/** booking/wing_clip_number are never client-supplied — server derives them from the hatching. */
+export interface ChickCreatePayload {
+  hatching: number
+  name?: string
+  birth_date: string
+  gender?: ChickGender
+  color_note?: string
+}

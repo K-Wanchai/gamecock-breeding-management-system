@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { cancelBooking, createBooking, getBooking, listBookings } from '@/lib/api/bookings'
+import { approveBooking, cancelBooking, createBooking, getBooking, listBookings } from '@/lib/api/bookings'
 import type { BookingListParams } from '@/types/booking'
 
 export function useBookingsQuery(params: BookingListParams) {
@@ -29,6 +29,17 @@ export function useCancelBooking() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, reason }: { id: number; reason?: string }) => cancelBooking(id, reason),
+    onSuccess: (booking) => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      queryClient.setQueryData(['bookings', 'detail', booking.id], booking)
+    },
+  })
+}
+
+export function useApproveBooking() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => approveBooking(id),
     onSuccess: (booking) => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] })
       queryClient.setQueryData(['bookings', 'detail', booking.id], booking)

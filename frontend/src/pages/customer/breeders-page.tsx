@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { BookingFormDialog } from '@/components/bookings/booking-form-dialog'
 import { useBreedersQuery } from '@/hooks/use-breeders'
@@ -19,7 +20,7 @@ export function BreedersPage() {
   const debouncedSearch = useDebouncedValue(search)
   const [bookingBreeder, setBookingBreeder] = useState<Breeder | null>(null)
 
-  const { data, isLoading } = useBreedersQuery({
+  const { data, isLoading, isError, refetch } = useBreedersQuery({
     page,
     search: debouncedSearch || undefined,
     status: 'ACTIVE',
@@ -43,6 +44,8 @@ export function BreedersPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ไม่พบพ่อพันธุ์ที่เปิดให้บริการ</p>
       ) : (

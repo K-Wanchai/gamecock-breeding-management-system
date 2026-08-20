@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { useDocumentsQuery, useDownloadDocument } from '@/hooks/use-documents'
 import { toastApiError } from '@/lib/toast'
@@ -21,7 +22,7 @@ const PAGE_SIZE = 20
 
 export function DocumentsPage() {
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useDocumentsQuery({ page })
+  const { data, isLoading, isError, refetch } = useDocumentsQuery({ page })
   const download = useDownloadDocument()
 
   function handleDownload(document: Document) {
@@ -37,6 +38,8 @@ export function DocumentsPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ยังไม่มีเอกสาร</p>
       ) : (

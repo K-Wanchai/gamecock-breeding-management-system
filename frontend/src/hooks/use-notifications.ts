@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { requestLineLinkCode, listNotifications } from '@/lib/api/notifications'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { requestLineLinkCode, listNotifications, retryNotification } from '@/lib/api/notifications'
 import type { NotificationListParams } from '@/types/notification'
 
 export function useNotificationsQuery(params: NotificationListParams) {
@@ -12,5 +12,13 @@ export function useNotificationsQuery(params: NotificationListParams) {
 export function useRequestLineLinkCode() {
   return useMutation({
     mutationFn: requestLineLinkCode,
+  })
+}
+
+export function useRetryNotification() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: retryNotification,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   })
 }

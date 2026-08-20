@@ -13,3 +13,9 @@ export async function requestLineLinkCode(): Promise<LineLinkCode> {
   const { data } = await api.post<LineLinkCode>('/notifications/line/link-code/')
   return data
 }
+
+/** ADMIN only — capped at MAX_RETRY_ATTEMPTS (3) server-side (apps.notifications.services.retry_notification). */
+export async function retryNotification(id: number): Promise<Notification> {
+  const { data } = await api.post<Notification>(`/notifications/${id}/retry/`)
+  return data
+}

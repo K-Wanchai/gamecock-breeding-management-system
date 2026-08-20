@@ -1,8 +1,8 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/app-layout'
-import { PlaceholderPage } from '@/components/shared/placeholder-page'
 import { RequireAuth, RequireRole } from '@/routes/guards'
 import { RootRedirect } from '@/routes/root-redirect'
+import { NotFoundPage } from '@/pages/shared/not-found-page'
 import { LoginPage } from '@/pages/auth/login-page'
 import { RegisterPage } from '@/pages/auth/register-page'
 import { ForgotPasswordPage } from '@/pages/auth/forgot-password-page'
@@ -22,6 +22,25 @@ import { NotificationsPage } from '@/pages/customer/notifications-page'
 import { LineLinkPage } from '@/pages/customer/line-link-page'
 import { AdminBreedersPage } from '@/pages/admin/breeders-page'
 import { AdminBreederQuotasPage } from '@/pages/admin/breeder-quotas-page'
+import { AdminBookingsPage } from '@/pages/admin/bookings-page'
+import { AdminBookingDetailPage } from '@/pages/admin/booking-detail-page'
+import { AdminPaymentsPage } from '@/pages/admin/payments-page'
+import { AdminBreedingPage } from '@/pages/admin/breeding-page'
+import { AdminChicksPage } from '@/pages/admin/chicks-page'
+import { AdminChickDetailPage } from '@/pages/admin/chick-detail-page'
+import { AdminHealthPage } from '@/pages/admin/health-page'
+import { AdminVaccinationsPage } from '@/pages/admin/vaccinations-page'
+import { AdminDocumentsPage } from '@/pages/admin/documents-page'
+import { AdminNotificationsPage } from '@/pages/admin/notifications-page'
+import { ReportsHubPage } from '@/pages/admin/reports/reports-hub-page'
+import { BookingReportPage } from '@/pages/admin/reports/booking-report-page'
+import { PaymentReportPage } from '@/pages/admin/reports/payment-report-page'
+import { RevenueReportPage } from '@/pages/admin/reports/revenue-report-page'
+import { BreedingReportPage } from '@/pages/admin/reports/breeding-report-page'
+import { EggReportPage } from '@/pages/admin/reports/egg-report-page'
+import { HatchingReportPage } from '@/pages/admin/reports/hatching-report-page'
+import { ChickReportPage } from '@/pages/admin/reports/chick-report-page'
+import { AdminSearchPage } from '@/pages/admin/search-page'
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
@@ -43,13 +62,25 @@ export const router = createBrowserRouter([
               { path: 'profile', element: <ProfilePage /> },
               { path: 'breeders', element: <AdminBreedersPage /> },
               { path: 'breeders/:id/quotas', element: <AdminBreederQuotasPage /> },
-              { path: 'bookings', element: <PlaceholderPage title="การจองคิว" /> },
-              { path: 'payments', element: <PlaceholderPage title="การชำระเงิน" /> },
-              { path: 'breeding', element: <PlaceholderPage title="กระบวนการผสมพันธุ์" /> },
-              { path: 'chicks', element: <PlaceholderPage title="ลูกไก่" /> },
-              { path: 'health', element: <PlaceholderPage title="สุขภาพ" /> },
-              { path: 'vaccinations', element: <PlaceholderPage title="วัคซีน" /> },
-              { path: 'documents', element: <PlaceholderPage title="เอกสาร" /> },
+              { path: 'bookings', element: <AdminBookingsPage /> },
+              { path: 'bookings/:id', element: <AdminBookingDetailPage /> },
+              { path: 'payments', element: <AdminPaymentsPage /> },
+              { path: 'breeding', element: <AdminBreedingPage /> },
+              { path: 'chicks', element: <AdminChicksPage /> },
+              { path: 'chicks/:id', element: <AdminChickDetailPage /> },
+              { path: 'health', element: <AdminHealthPage /> },
+              { path: 'vaccinations', element: <AdminVaccinationsPage /> },
+              { path: 'documents', element: <AdminDocumentsPage /> },
+              { path: 'notifications', element: <AdminNotificationsPage /> },
+              { path: 'reports', element: <ReportsHubPage /> },
+              { path: 'reports/bookings', element: <BookingReportPage /> },
+              { path: 'reports/payments', element: <PaymentReportPage /> },
+              { path: 'reports/revenue', element: <RevenueReportPage /> },
+              { path: 'reports/breeding', element: <BreedingReportPage /> },
+              { path: 'reports/eggs', element: <EggReportPage /> },
+              { path: 'reports/hatchings', element: <HatchingReportPage /> },
+              { path: 'reports/chicks', element: <ChickReportPage /> },
+              { path: 'search', element: <AdminSearchPage /> },
             ],
           },
         ],
@@ -79,5 +110,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '*', element: <Navigate to="/" replace /> },
+  { path: '*', element: <NotFoundPage /> },
 ])

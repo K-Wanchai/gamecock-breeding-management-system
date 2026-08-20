@@ -20,5 +20,18 @@ export interface HealthRecord {
 }
 
 export interface HealthRecordListParams {
+  page?: number
   chick?: number
+  search?: string
+}
+
+/** weight is sent as a raw string from the number input — DRF's DecimalField accepts that directly. */
+export interface HealthRecordCreatePayload {
+  chick: number
+  record_date: string
+  weight?: string
+  symptom?: string
+  observation?: string
+  medicine?: string
+  remark?: string
 }

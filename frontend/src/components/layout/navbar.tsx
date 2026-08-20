@@ -1,6 +1,8 @@
-import { LogOut, User as UserIcon } from 'lucide-react'
+import { useState } from 'react'
+import { LogOut, Menu, User as UserIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,12 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { NavLinks } from '@/components/layout/nav-links'
 import { useAuth, useLogout } from '@/hooks/use-auth'
+import type { Role } from '@/types/auth'
 
-export function Navbar() {
+export function Navbar({ role }: { role: Role }) {
   const { user } = useAuth()
   const logout = useLogout()
   const navigate = useNavigate()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const profilePath = user?.role === 'ADMIN' ? '/admin/profile' : '/app/profile'
 
   const initials = user
@@ -22,7 +28,25 @@ export function Navbar() {
     : ''
 
   return (
-    <header className="flex h-14 items-center justify-end border-b px-4">
+    <header className="flex h-14 items-center justify-between border-b px-4 md:justify-end">
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          aria-label="เปิดเมนู"
+          onClick={() => setMobileNavOpen(true)}
+        >
+          <Menu className="size-5" />
+        </Button>
+        <SheetContent side="left" className="w-64 p-0">
+          <SheetHeader className="border-b p-4">
+            <SheetTitle>ฟาร์มไก่ชน</SheetTitle>
+          </SheetHeader>
+          <NavLinks role={role} onNavigate={() => setMobileNavOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 rounded-md p-1.5 outline-none hover:bg-accent">
           <Avatar className="size-8">

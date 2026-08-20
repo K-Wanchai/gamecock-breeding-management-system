@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { BreederFormDialog } from '@/components/breeders/breeder-form-dialog'
 import { useBreedersQuery, useDeleteBreeder } from '@/hooks/use-breeders'
@@ -62,7 +63,7 @@ export function AdminBreedersPage() {
   const [editingBreeder, setEditingBreeder] = useState<Breeder | undefined>(undefined)
   const [deletingBreeder, setDeletingBreeder] = useState<Breeder | null>(null)
 
-  const { data, isLoading } = useBreedersQuery({
+  const { data, isLoading, isError, refetch } = useBreedersQuery({
     page,
     search: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
@@ -135,6 +136,8 @@ export function AdminBreedersPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ยังไม่มีข้อมูลพ่อพันธุ์</p>
       ) : (

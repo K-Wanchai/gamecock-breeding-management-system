@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { useBookingsQuery } from '@/hooks/use-bookings'
@@ -45,7 +46,7 @@ export function BookingsPage() {
   const [bookingDate, setBookingDate] = useState('')
   const debouncedSearch = useDebouncedValue(search)
 
-  const { data, isLoading } = useBookingsQuery({
+  const { data, isLoading, isError, refetch } = useBookingsQuery({
     page,
     search: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
@@ -103,6 +104,8 @@ export function BookingsPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ยังไม่มีการจอง</p>
       ) : (

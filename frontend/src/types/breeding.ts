@@ -68,3 +68,30 @@ export interface BreedingEventListParams {
 export interface EggListParams {
   booking?: number
 }
+
+/** status must be the single allowed next stage — the form never lets the admin pick freely. */
+export interface BreedingEventCreatePayload {
+  booking: number
+  status: BreedingEventStatus
+  event_date: string
+  description?: string
+}
+
+export interface EggCreatePayload {
+  booking: number
+  total_eggs: number
+  good_eggs?: number
+  bad_eggs?: number
+  egg_date: string
+  incubation_date?: string
+  remark?: string
+}
+
+/** Mirrors apps.breeding.services.BREEDING_TRANSITIONS — null events means no event yet (next is RECEIVED), null return means HATCHING already recorded (terminal). */
+export function getNextBreedingStage(events: BreedingEvent[]): BreedingEventStatus | null {
+  if (events.length === 0) return BREEDING_EVENT_STAGES[0]
+  const current = events[events.length - 1].status
+  const index = BREEDING_EVENT_STAGES.indexOf(current)
+  if (index === -1 || index === BREEDING_EVENT_STAGES.length - 1) return null
+  return BREEDING_EVENT_STAGES[index + 1]
+}

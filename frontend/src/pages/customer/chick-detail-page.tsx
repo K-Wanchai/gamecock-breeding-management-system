@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { DocumentList } from '@/components/documents/document-list'
 import { useChickQuery } from '@/hooks/use-chicks'
 import { useHealthRecordsQuery } from '@/hooks/use-health-records'
@@ -29,12 +30,15 @@ export function ChickDetailPage() {
   const { id } = useParams<{ id: string }>()
   const chickId = Number(id)
 
-  const { data: chick, isLoading } = useChickQuery(chickId)
+  const { data: chick, isLoading, isError, refetch } = useChickQuery(chickId)
   const { data: healthRecords } = useHealthRecordsQuery({ chick: chickId })
   const { data: vaccinations } = useVaccinationsQuery({ chick: chickId })
 
-  if (isLoading || !chick) {
+  if (isLoading) {
     return <SectionLoading />
+  }
+  if (isError || !chick) {
+    return <QueryError onRetry={refetch} />
   }
 
   return (

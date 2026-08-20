@@ -41,3 +41,16 @@ export interface DocumentListParams {
   booking?: number
   chick?: number
 }
+
+/** CONTRACT is booking-based and out of scope for the generate endpoint — apps.documents.serializers.DocumentGenerateSerializer only accepts these two. */
+export type GeneratableDocumentType = 'PEDIGREE_CERTIFICATE' | 'DELIVERY_DOCUMENT'
+
+export const GENERATABLE_DOCUMENT_TYPES: GeneratableDocumentType[] = [
+  'PEDIGREE_CERTIFICATE',
+  'DELIVERY_DOCUMENT',
+]
+
+export interface DocumentGeneratePayload {
+  chick: number
+  document_type: GeneratableDocumentType
+}

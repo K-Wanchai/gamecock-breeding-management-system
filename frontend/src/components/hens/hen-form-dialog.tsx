@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { useCreateHen, useUpdateHen } from '@/hooks/use-hens'
 import { toastApiError } from '@/lib/toast'
+import { validateImageFile } from '@/lib/validate-image-file'
 import { toast } from 'sonner'
 import type { Hen, HenFormValues } from '@/types/hen'
 
@@ -68,6 +69,14 @@ export function HenFormDialog({ open, onOpenChange, hen }: HenFormDialogProps) {
 
   function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null
+    if (file) {
+      const error = validateImageFile(file)
+      if (error) {
+        toast.error(error)
+        event.target.value = ''
+        return
+      }
+    }
     setForm((prev) => ({ ...prev, image: file }))
     setPreviewUrl(file ? URL.createObjectURL(file) : (hen?.image ?? null))
   }

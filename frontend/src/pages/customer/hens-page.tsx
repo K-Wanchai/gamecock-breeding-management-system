@@ -29,6 +29,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { HenFormDialog } from '@/components/hens/hen-form-dialog'
 import { useDeleteHen, useHensQuery, useUpdateHenStatus } from '@/hooks/use-hens'
@@ -49,7 +50,7 @@ export function HensPage() {
   const [editingHen, setEditingHen] = useState<Hen | undefined>(undefined)
   const [deletingHen, setDeletingHen] = useState<Hen | null>(null)
 
-  const { data, isLoading } = useHensQuery({
+  const { data, isLoading, isError, refetch } = useHensQuery({
     page,
     search: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
@@ -127,6 +128,8 @@ export function HensPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <p className="py-16 text-center text-muted-foreground">ยังไม่มีข้อมูลแม่ไก่</p>
       ) : (

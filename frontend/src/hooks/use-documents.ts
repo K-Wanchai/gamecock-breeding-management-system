@@ -1,5 +1,5 @@
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
-import { downloadDocument, listDocuments } from '@/lib/api/documents'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { downloadDocument, generateDocument, listDocuments, previewDocumentUrl } from '@/lib/api/documents'
 import type { DocumentListParams } from '@/types/document'
 
 /**
@@ -20,5 +20,19 @@ export function useDownloadDocument() {
   return useMutation({
     mutationFn: ({ id, filename }: { id: number; filename: string }) =>
       downloadDocument(id, filename),
+  })
+}
+
+export function usePreviewDocument() {
+  return useMutation({
+    mutationFn: (id: number) => previewDocumentUrl(id),
+  })
+}
+
+export function useGenerateDocument() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: generateDocument,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents'] }),
   })
 }

@@ -4,6 +4,7 @@ import { Bell } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { SectionLoading } from '@/components/shared/loading'
+import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { useNotificationsQuery } from '@/hooks/use-notifications'
 import { NOTIFICATION_STATUS_LABEL } from '@/types/notification'
@@ -19,7 +20,7 @@ const STATUS_VARIANT: Record<NotificationStatus, 'default' | 'secondary' | 'dest
 
 export function NotificationsPage() {
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useNotificationsQuery({ page })
+  const { data, isLoading, isError, refetch } = useNotificationsQuery({ page })
 
   return (
     <div className="flex flex-col gap-4">
@@ -27,6 +28,8 @@ export function NotificationsPage() {
 
       {isLoading ? (
         <SectionLoading />
+      ) : isError ? (
+        <QueryError onRetry={refetch} />
       ) : !data || data.results.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground">
           <Bell className="size-8" />

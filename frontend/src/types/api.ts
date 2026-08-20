@@ -5,3 +5,8 @@ export interface PaginatedResponse<T> {
   previous: string | null
   results: T[]
 }
+
+/** apps.reports.views.BaseReportView merges a `summary` (computed over the filtered-but-unpaginated queryset) into the standard envelope. */
+export interface PaginatedReportResponse<T, S> extends PaginatedResponse<T> {
+  summary: S
+}
