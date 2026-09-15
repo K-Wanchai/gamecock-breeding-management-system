@@ -19,7 +19,7 @@ class Booking(TimeStampedModel):
     class Status(models.TextChoices):
         PENDING = 'PENDING', 'รอดำเนินการ'
         WAITING_PAYMENT = 'WAITING_PAYMENT', 'รอชำระเงิน'
-        PAID = 'PAID', 'ชำระมัดจำแล้ว'
+        PAID = 'PAID', 'ชำระเงินแล้ว'
         APPROVED = 'APPROVED', 'อนุมัติแล้ว/ล็อกคิว'
         IN_PROGRESS = 'IN_PROGRESS', 'กำลังดำเนินการผสม'
         COMPLETED = 'COMPLETED', 'เสร็จสิ้น'

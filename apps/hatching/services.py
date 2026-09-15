@@ -73,6 +73,9 @@ def complete_hatching(
     hatching.save(update_fields=[
         'completed_at', 'hatched_count', 'failed_count', 'survival_count', 'status', 'remark', 'updated_at',
     ])
+
+    from apps.notifications import services as notification_services
+    transaction.on_commit(lambda: notification_services.notify_hatching_completed(hatching))
     return hatching
 
 

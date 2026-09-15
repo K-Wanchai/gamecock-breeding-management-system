@@ -19,7 +19,6 @@ import { ChicksPage } from '@/pages/customer/chicks-page'
 import { ChickDetailPage } from '@/pages/customer/chick-detail-page'
 import { DocumentsPage } from '@/pages/customer/documents-page'
 import { NotificationsPage } from '@/pages/customer/notifications-page'
-import { LineLinkPage } from '@/pages/customer/line-link-page'
 import { AdminBreedersPage } from '@/pages/admin/breeders-page'
 import { AdminBreederQuotasPage } from '@/pages/admin/breeder-quotas-page'
 import { AdminBookingsPage } from '@/pages/admin/bookings-page'
@@ -41,6 +40,7 @@ import { EggReportPage } from '@/pages/admin/reports/egg-report-page'
 import { HatchingReportPage } from '@/pages/admin/reports/hatching-report-page'
 import { ChickReportPage } from '@/pages/admin/reports/chick-report-page'
 import { AdminSearchPage } from '@/pages/admin/search-page'
+import { AdminSettingsPage } from '@/pages/admin/settings-page'
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
@@ -81,6 +81,7 @@ export const router = createBrowserRouter([
               { path: 'reports/hatchings', element: <HatchingReportPage /> },
               { path: 'reports/chicks', element: <ChickReportPage /> },
               { path: 'search', element: <AdminSearchPage /> },
+              { path: 'settings', element: <AdminSettingsPage /> },
             ],
           },
         ],
@@ -103,7 +104,6 @@ export const router = createBrowserRouter([
               { path: 'chicks/:id', element: <ChickDetailPage /> },
               { path: 'documents', element: <DocumentsPage /> },
               { path: 'notifications', element: <NotificationsPage /> },
-              { path: 'line-link', element: <LineLinkPage /> },
             ],
           },
         ],

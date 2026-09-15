@@ -25,7 +25,12 @@ class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
     ordering = ('-created_at',)
 
     def get_queryset(self):
-        queryset = Booking.objects.select_related('customer', 'hen', 'breeder').all()
+        queryset = (
+            Booking.objects
+            .select_related('customer', 'hen', 'breeder')
+            .prefetch_related('breeding_events')
+            .all()
+        )
         user = self.request.user
         if user.role == user.Role.ADMIN:
             return queryset

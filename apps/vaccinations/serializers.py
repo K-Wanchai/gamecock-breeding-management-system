@@ -2,7 +2,13 @@ from rest_framework import serializers
 
 from apps.chicks.models import Chick
 
-from apps.vaccinations.models import Vaccination
+from apps.vaccinations.models import Vaccination, VaccinePreset
+
+
+class VaccinePresetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VaccinePreset
+        fields = ('id', 'name')
 
 
 class _RecordedBySummarySerializer(serializers.Serializer):

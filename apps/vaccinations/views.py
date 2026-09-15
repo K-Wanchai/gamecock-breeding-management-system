@@ -1,12 +1,26 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.permissions import IsAdminRole
 from apps.vaccinations import services
-from apps.vaccinations.models import Vaccination
+from apps.vaccinations.models import Vaccination, VaccinePreset
 from apps.vaccinations.permissions import VaccinationWritePermission
-from apps.vaccinations.serializers import VaccinationCreateSerializer, VaccinationSerializer
+from apps.vaccinations.serializers import VaccinationCreateSerializer, VaccinationSerializer, VaccinePresetSerializer
+
+
+class VaccinePresetViewSet(viewsets.ModelViewSet):
+    """/api/v1/vaccine-presets/ — ADMIN manages the list; any authenticated user can read it."""
+
+    queryset = VaccinePreset.objects.all()
+    serializer_class = VaccinePresetSerializer
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return [IsAuthenticated()]
+        return [IsAdminRole()]
 
 
 class VaccinationViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):

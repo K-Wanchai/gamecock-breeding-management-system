@@ -31,3 +31,12 @@ export async function rejectPayment(id: number, remark?: string): Promise<Paymen
   const { data } = await api.patch<Payment>(`/payments/${id}/reject/`, { remark })
   return data
 }
+
+/** Customer replaces the slip on a REJECTED payment — payment_number is preserved. */
+export async function resubmitPayment(id: number, slip: File, paidAt: string): Promise<Payment> {
+  const formData = new FormData()
+  formData.append('slip', slip)
+  formData.append('paid_at', new Date(paidAt).toISOString())
+  const { data } = await api.patch<Payment>(`/payments/${id}/resubmit/`, formData)
+  return data
+}

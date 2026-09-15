@@ -45,7 +45,7 @@ const STATUS_OPTIONS: { value: BookingStatus | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'ทุกสถานะ' },
   { value: 'PENDING', label: 'รอดำเนินการ' },
   { value: 'WAITING_PAYMENT', label: 'รอชำระเงิน' },
-  { value: 'PAID', label: 'ชำระมัดจำแล้ว' },
+  { value: 'PAID', label: 'ชำระเงินแล้ว' },
   { value: 'APPROVED', label: 'อนุมัติแล้ว/ล็อกคิว' },
   { value: 'IN_PROGRESS', label: 'กำลังดำเนินการผสม' },
   { value: 'COMPLETED', label: 'เสร็จสิ้น' },
@@ -117,7 +117,7 @@ export function AdminBookingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">การจองคิว</h1>
+      <h1 className="text-2xl font-semibold">การซื้อล็อคฝากผสม</h1>
 
       <div className="flex flex-wrap gap-3">
         <Input

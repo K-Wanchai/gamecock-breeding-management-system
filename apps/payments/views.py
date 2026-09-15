@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from apps.payments import services
 from apps.payments.models import Payment
 from apps.payments.permissions import PaymentActionPermission
-from apps.payments.serializers import PaymentCreateSerializer, PaymentReviewSerializer, PaymentSerializer
+from apps.payments.serializers import PaymentCreateSerializer, PaymentResubmitSerializer, PaymentReviewSerializer, PaymentSerializer
 
 
 class PaymentViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -66,5 +66,19 @@ class PaymentViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
         serializer.is_valid(raise_exception=True)
         payment = services.reject_payment(
             payment_id=payment.id, admin=request.user, remark=serializer.validated_data.get('remark', ''),
+        )
+        return Response(PaymentSerializer(payment).data)
+
+    @action(detail=True, methods=['patch'])
+    def resubmit(self, request, pk=None):
+        """CUSTOMER — replace slip on a REJECTED payment; payment_number is preserved."""
+        payment = self.get_object()
+        serializer = PaymentResubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        payment = services.resubmit_payment(
+            payment_id=payment.id,
+            customer=request.user,
+            slip=serializer.validated_data['slip'],
+            paid_at=serializer.validated_data['paid_at'],
         )
         return Response(PaymentSerializer(payment).data)

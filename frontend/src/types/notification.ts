@@ -44,7 +44,3 @@ export interface NotificationListParams {
   notif_type?: string
 }
 
-export interface LineLinkCode {
-  code: string
-  expires_at: string
-}

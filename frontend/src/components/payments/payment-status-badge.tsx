@@ -20,7 +20,7 @@ export function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
 }
 
 export const PAYMENT_TYPE_LABEL: Record<PaymentType, string> = {
-  DEPOSIT: 'มัดจำ',
+  DEPOSIT: 'ชำระครั้งแรก',
   FULL: 'เต็มจำนวน',
   ADDITIONAL: 'ชำระเพิ่มเติม',
 }

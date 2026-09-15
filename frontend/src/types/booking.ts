@@ -46,6 +46,7 @@ export interface Booking {
   remaining_amount: string
   status: BookingStatus
   current_breeding_stage: string | null
+  latest_breeding_status: string | null
   note: string | null
   requested_at: string
   approved_at: string | null

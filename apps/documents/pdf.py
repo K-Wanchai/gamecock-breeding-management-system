@@ -10,7 +10,6 @@ import io
 import logging
 import os
 
-from django.conf import settings
 from django.utils import timezone
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -135,11 +134,14 @@ def render_document_pdf(document, chick) -> bytes:
     breeder = booking.breeder
     hen = booking.hen
 
+    from apps.core.models import FarmSetting  # local import: avoids circular at module load
+    farm = FarmSetting.load()
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=2 * cm, bottomMargin=2 * cm)
     styles = _thai_styles()
     story = [
-        Paragraph(settings.FARM_NAME, styles['Title']),
+        Paragraph(farm.farm_name or 'ฟาร์มไก่ชน', styles['Title']),
         Paragraph(_DOCUMENT_TITLES.get(document.document_type, document.document_type), styles['Heading2']),
         Spacer(1, 0.5 * cm),
     ]

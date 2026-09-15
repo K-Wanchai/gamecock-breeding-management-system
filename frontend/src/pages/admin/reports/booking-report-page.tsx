@@ -33,7 +33,7 @@ const STATUS_OPTIONS: { value: BookingStatus | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'ทุกสถานะ' },
   { value: 'PENDING', label: 'รอดำเนินการ' },
   { value: 'WAITING_PAYMENT', label: 'รอชำระเงิน' },
-  { value: 'PAID', label: 'ชำระมัดจำแล้ว' },
+  { value: 'PAID', label: 'ชำระเงินแล้ว' },
   { value: 'APPROVED', label: 'อนุมัติแล้ว/ล็อกคิว' },
   { value: 'IN_PROGRESS', label: 'กำลังดำเนินการผสม' },
   { value: 'COMPLETED', label: 'เสร็จสิ้น' },

@@ -5,6 +5,19 @@ from apps.chicks.models import Chick
 from apps.core.models import TimeStampedModel
 
 
+class VaccinePreset(models.Model):
+    """Admin-managed list of vaccine names used at this farm. Lets admins pick
+    from a preset list instead of typing the same names repeatedly."""
+
+    name = models.CharField(max_length=150, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Vaccination(TimeStampedModel):
     """STEP1 §4.12 / STEP7 — ประวัติวัคซีนลูกไก่.
 

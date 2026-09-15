@@ -13,9 +13,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'username', 'email', 'phone', 'first_name', 'last_name',
-            'role', 'line_user_id', 'is_active', 'date_joined',
+            'role', 'is_active', 'date_joined',
         )
-        read_only_fields = ('id', 'username', 'role', 'line_user_id', 'is_active', 'date_joined')
+        read_only_fields = ('id', 'username', 'role', 'is_active', 'date_joined')
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):

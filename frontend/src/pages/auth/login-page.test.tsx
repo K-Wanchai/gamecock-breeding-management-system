@@ -35,7 +35,6 @@ function mockUser(role: 'ADMIN' | 'CUSTOMER') {
     first_name: '',
     last_name: '',
     role,
-    line_user_id: null,
     is_active: true,
     date_joined: '2026-01-01T00:00:00Z',
   }

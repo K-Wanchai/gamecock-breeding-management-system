@@ -57,7 +57,7 @@ const STATUS_OPTIONS: { value: PaymentStatus | 'ALL'; label: string }[] = [
 
 const TYPE_OPTIONS: { value: PaymentType | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'ทุกประเภท' },
-  { value: 'DEPOSIT', label: 'มัดจำ' },
+  { value: 'DEPOSIT', label: 'ชำระครั้งแรก' },
   { value: 'FULL', label: 'เต็มจำนวน' },
   { value: 'ADDITIONAL', label: 'ชำระเพิ่มเติม' },
 ]

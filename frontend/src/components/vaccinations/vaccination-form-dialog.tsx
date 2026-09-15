@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ChickPicker } from '@/components/chicks/chick-picker'
-import { useCreateVaccination } from '@/hooks/use-vaccinations'
+import { useCreateVaccination, useVaccinePresetsQuery } from '@/hooks/use-vaccinations'
 import { toastApiError } from '@/lib/toast'
 import type { Chick } from '@/types/chick'
 
@@ -37,6 +38,7 @@ export function VaccinationFormDialog({ open, onOpenChange, chick }: Vaccination
   const [remark, setRemark] = useState('')
 
   const createVaccination = useCreateVaccination()
+  const { data: presets } = useVaccinePresetsQuery()
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -74,8 +76,23 @@ export function VaccinationFormDialog({ open, onOpenChange, chick }: Vaccination
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="vaccine_name">ชื่อวัคซีน</Label>
+            {presets && presets.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {presets.map((p) => (
+                  <Badge
+                    key={p.id}
+                    variant={vaccineName === p.name ? 'default' : 'outline'}
+                    className="cursor-pointer select-none"
+                    onClick={() => setVaccineName(p.name)}
+                  >
+                    {p.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
             <Input
               id="vaccine_name"
+              placeholder="หรือพิมพ์ชื่อวัคซีนเอง"
               value={vaccineName}
               onChange={(e) => setVaccineName(e.target.value)}
               required

@@ -14,7 +14,10 @@ export function useCreateBreedingEvent() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createBreedingEvent,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['breeding-events'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['breeding-events'] })
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+    },
   })
 }
 

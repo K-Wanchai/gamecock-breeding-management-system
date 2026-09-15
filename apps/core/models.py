@@ -1,6 +1,29 @@
 from django.db import models
 
 
+class FarmSetting(models.Model):
+    """
+    Singleton row (pk=1) — admin-editable farm configuration that the frontend
+    reads at runtime (bank account, PromptPay, farm name/address for emails).
+    Use FarmSetting.load() everywhere instead of instantiating directly.
+    """
+
+    farm_name = models.CharField(max_length=200, default='ฟาร์มไก่ชน')
+    farm_address = models.TextField(blank=True, default='')
+    bank_name = models.CharField(max_length=100, blank=True, default='')
+    account_number = models.CharField(max_length=50, blank=True, default='')
+    account_holder = models.CharField(max_length=200, blank=True, default='')
+    promptpay = models.CharField(max_length=20, blank=True, default='')
+
+    class Meta:
+        verbose_name = 'Farm Setting'
+
+    @classmethod
+    def load(cls) -> 'FarmSetting':
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class TimeStampedModel(models.Model):
     """Abstract base giving every concrete model created_at/updated_at (Global Rule #10)."""
 

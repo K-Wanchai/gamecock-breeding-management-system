@@ -89,17 +89,24 @@ def record_breeding_event(*, booking_id, status: str, event_date, description: s
 
     try:
         with transaction.atomic():
-            return BreedingEvent.objects.create(
+            event = BreedingEvent.objects.create(
                 booking=booking, status=status, event_date=event_date,
                 description=description or '', recorded_by=recorded_by,
             )
     except IntegrityError:
-        # Two concurrent requests both passed the pre-check above; the DB unique
-        # constraint on (booking, status) is the real race guard (Global Rule #19).
         raise AppError(
             'DUPLICATE_BREEDING_EVENT', 'This breeding status has already been recorded for this booking.',
             http_status=409,
         )
+
+    # Move booking to IN_PROGRESS on the first event so it leaves the APPROVED queue
+    if booking.status == Booking.Status.APPROVED:
+        booking.status = Booking.Status.IN_PROGRESS
+        booking.save(update_fields=['status', 'updated_at'])
+
+    from apps.notifications import services as notification_services
+    transaction.on_commit(lambda: notification_services.notify_breeding_event(event))
+    return event
 
 
 @transaction.atomic

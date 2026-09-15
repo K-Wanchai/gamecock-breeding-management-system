@@ -44,3 +44,12 @@ class PaymentReviewSerializer(serializers.Serializer):
     """Body for the approve/reject actions."""
 
     remark = serializers.CharField(required=False, allow_blank=True, max_length=255)
+
+
+class PaymentResubmitSerializer(serializers.Serializer):
+    """Body for the resubmit action — customer replaces slip on a REJECTED payment."""
+
+    from apps.core.validators import validate_image_file as _validate_image
+
+    slip = serializers.ImageField(validators=[_validate_image])
+    paid_at = serializers.DateTimeField()

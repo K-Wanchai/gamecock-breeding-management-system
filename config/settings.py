@@ -157,11 +157,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- Business identity (used on generated PDF documents, STEP8) ------------
-
-FARM_NAME = os.environ.get('FARM_NAME', 'ฟาร์มไก่ชน')
-
-
 # --- Django REST Framework --------------------------------------------------
 
 REST_FRAMEWORK = {
@@ -195,7 +190,6 @@ REST_FRAMEWORK = {
         'login': os.environ.get('THROTTLE_RATE_LOGIN', '10/min'),
         'register': os.environ.get('THROTTLE_RATE_REGISTER', '10/min'),
         'password_reset': os.environ.get('THROTTLE_RATE_PASSWORD_RESET', '5/min'),
-        'line_webhook': os.environ.get('THROTTLE_RATE_LINE_WEBHOOK', '120/min'),
     },
 }
 
@@ -240,11 +234,6 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS
 SECURE_HSTS_PRELOAD = env_bool('DJANGO_SECURE_HSTS_PRELOAD', not DEBUG)
 
 
-# --- LINE Notification (STEP9) ----------------------------------------------
-
-LINE_CHANNEL_ACCESS_TOKEN = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN', '')
-LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET', '')
-
 
 # --- Email (used for password reset — STEP3. Real SMTP/LINE delivery is a later
 # integration step; console backend just logs the message during development) ---
@@ -262,14 +251,6 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@gamecock-bree
 PASSWORD_RESET_TIMEOUT = int(os.environ.get('PASSWORD_RESET_TIMEOUT_SECONDS', 3600))
 
 
-# --- LINE Messaging API (STEP17) --------------------------------------------
-# LINE_CHANNEL_SECRET signs every webhook LINE sends us (apps.notifications.services.
-# verify_line_signature); blank in dev/test means the webhook always rejects incoming
-# requests rather than accepting unverifiable ones. LINE_CHANNEL_ACCESS_TOKEN would be
-# needed to reply/push messages back through LINE, which this step doesn't do yet.
-
-LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET', '')
-LINE_CHANNEL_ACCESS_TOKEN = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN', '')
 
 
 # --- Logging (Global Rule #15) ---------------------------------------------

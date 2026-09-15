@@ -32,12 +32,10 @@ function nowLocal(): string {
   return d.toISOString().slice(0, 16) // YYYY-MM-DDTHH:mm for <input type="datetime-local">
 }
 
-/** First payment on a booking defaults to the deposit; anything after defaults to clearing the remainder. */
 function defaultValuesFor(booking: Booking): PaymentFormValues {
-  const isFirstPayment = Number(booking.paid_amount) === 0
   return {
-    payment_type: isFirstPayment ? 'DEPOSIT' : 'FULL',
-    amount: isFirstPayment ? booking.deposit_amount : booking.remaining_amount,
+    payment_type: 'FULL',
+    amount: booking.remaining_amount,
     paid_at: nowLocal(),
     slip: null,
   }

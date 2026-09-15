@@ -56,8 +56,8 @@ export function BookingFormDialog({ open, onOpenChange, breeder }: BookingFormDi
       },
       {
         onSuccess: (booking) => {
-          toast.success('จองคิวสำเร็จ', {
-            description: `ราคา ${booking.price} บาท มัดจำ ${booking.deposit_amount} บาท`,
+          toast.success('ซื้อล็อคฝากผสมสำเร็จ', {
+            description: `ราคา ${booking.price} บาท — กรุณาชำระเงินภายในเวลาที่กำหนด`,
           })
           onOpenChange(false)
           navigate(`/app/bookings/${booking.id}`)
@@ -71,9 +71,9 @@ export function BookingFormDialog({ open, onOpenChange, breeder }: BookingFormDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>จองคิวกับ {breeder.name}</DialogTitle>
+          <DialogTitle>ซื้อล็อคฝากผสมกับ {breeder.name}</DialogTitle>
           <DialogDescription>
-            ราคาค่าบริการ {breeder.service_rate} บาท — ระบบจะคำนวณราคาและมัดจำให้อัตโนมัติ
+            ราคาค่าบริการ {Number(breeder.service_rate).toLocaleString('th-TH')} บาท — ชำระเต็มจำนวน ไม่มีมัดจำ
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

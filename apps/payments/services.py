@@ -86,6 +86,33 @@ def approve_payment(*, payment_id, admin, remark: str = '') -> Payment:
 
 
 @transaction.atomic
+def resubmit_payment(*, payment_id, customer, slip, paid_at) -> Payment:
+    """Customer replaces the slip on a REJECTED payment and resets it to PENDING.
+    The payment_number never changes — only the slip, paid_at, status, and cleared review fields.
+    """
+    try:
+        payment = Payment.objects.select_for_update().get(pk=payment_id)
+    except Payment.DoesNotExist:
+        raise AppError('NOT_FOUND', 'Payment not found.', http_status=404)
+
+    if payment.booking.customer_id != customer.id:
+        raise AppError('FORBIDDEN', 'You may only resubmit your own payment.', http_status=403)
+    if payment.status != Payment.Status.REJECTED:
+        raise AppError(
+            'INVALID_STATE_TRANSITION', 'Only rejected payments can be resubmitted.', http_status=422,
+        )
+
+    payment.slip = slip
+    payment.paid_at = paid_at
+    payment.status = Payment.Status.PENDING
+    payment.verified_by = None
+    payment.verified_at = None
+    payment.remark = ''
+    payment.save(update_fields=['slip', 'paid_at', 'status', 'verified_by', 'verified_at', 'remark', 'updated_at'])
+    return payment
+
+
+@transaction.atomic
 def reject_payment(*, payment_id, admin, remark: str = '') -> Payment:
     try:
         payment = Payment.objects.select_for_update().get(pk=payment_id)

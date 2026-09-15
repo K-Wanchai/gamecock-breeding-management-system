@@ -8,7 +8,6 @@ export interface User {
   first_name: string
   last_name: string
   role: Role
-  line_user_id: string | null
   is_active: boolean
   date_joined: string
 }

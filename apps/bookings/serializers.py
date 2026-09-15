@@ -28,6 +28,11 @@ class BookingSerializer(serializers.ModelSerializer):
     hen = _HenSummarySerializer(read_only=True)
     breeder = _BreederSummarySerializer(read_only=True)
     customer = _CustomerSummarySerializer(read_only=True)
+    latest_breeding_status = serializers.SerializerMethodField()
+
+    def get_latest_breeding_status(self, obj):
+        events = list(obj.breeding_events.all())  # uses prefetch cache when available
+        return events[-1].status if events else None
 
     class Meta:
         model = Booking
@@ -35,7 +40,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'id', 'booking_number', 'customer', 'hen', 'breeder',
             'booking_date', 'booking_year', 'booking_month', 'queue_no',
             'price', 'deposit_amount', 'paid_amount', 'remaining_amount',
-            'status', 'current_breeding_stage', 'note',
+            'status', 'current_breeding_stage', 'latest_breeding_status', 'note',
             'requested_at', 'approved_at', 'locked_at', 'cancelled_at', 'cancel_reason',
             'created_at', 'updated_at',
         )

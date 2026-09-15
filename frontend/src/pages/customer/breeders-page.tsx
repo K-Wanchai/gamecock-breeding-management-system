@@ -83,7 +83,7 @@ export function BreedersPage() {
                 <CardFooter>
                   <Button className="w-full" onClick={() => setBookingBreeder(breeder)}>
                     <CalendarPlus className="size-4" />
-                    จองคิว
+                    ซื้อล็อคฝากผสม
                   </Button>
                 </CardFooter>
               </Card>

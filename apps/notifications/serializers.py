@@ -39,6 +39,3 @@ class NotificationSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class LineLinkCodeSerializer(serializers.Serializer):
-    code = serializers.CharField()
-    expires_at = serializers.DateTimeField()

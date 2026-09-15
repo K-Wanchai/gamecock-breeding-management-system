@@ -18,18 +18,10 @@ from apps.hens.models import Hen
 
 from apps.bookings.models import Booking
 
-# Business policy: the deposit is 30% of the breeder's service rate. Not given a
-# concrete number by the spec, so this is a documented assumption, not a magic number
-# scattered through the code — change it here if the real policy differs.
-DEPOSIT_PERCENT = Decimal('30')
-
-
 def calculate_booking_amount(breeder: Breeder) -> tuple[Decimal, Decimal]:
-    """Returns (price, deposit_amount) snapshot from the breeder's current service_rate.
-    Price is never accepted from the client (Critical Rule #15)."""
+    """Returns (price, deposit_amount). Full-payment policy: deposit_amount = price."""
     price = breeder.service_rate
-    deposit_amount = (price * DEPOSIT_PERCENT / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-    return price, deposit_amount
+    return price, price
 
 
 def check_booking_availability(*, customer, hen: Hen, breeder: Breeder, booking_date) -> None:

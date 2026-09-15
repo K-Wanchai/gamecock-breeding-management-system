@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { approvePayment, createPayment, listPayments, rejectPayment } from '@/lib/api/payments'
+import { approvePayment, createPayment, listPayments, rejectPayment, resubmitPayment } from '@/lib/api/payments'
 import type { PaymentFormValues, PaymentListParams } from '@/types/payment'
 
 export function usePaymentsQuery(params: PaymentListParams) {
@@ -35,5 +35,17 @@ export function useRejectPayment() {
   return useMutation({
     mutationFn: ({ id, remark }: { id: number; remark?: string }) => rejectPayment(id, remark),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['payments'] }),
+  })
+}
+
+export function useResubmitPayment() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, slip, paidAt }: { id: number; slip: File; paidAt: string }) =>
+      resubmitPayment(id, slip, paidAt),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] })
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+    },
   })
 }

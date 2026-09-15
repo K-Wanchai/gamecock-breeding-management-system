@@ -13,3 +13,22 @@ export async function createVaccination(payload: VaccinationCreatePayload): Prom
   const { data } = await api.post<Vaccination>('/vaccinations/', payload)
   return data
 }
+
+export interface VaccinePreset {
+  id: number
+  name: string
+}
+
+export async function listVaccinePresets(): Promise<VaccinePreset[]> {
+  const { data } = await api.get<VaccinePreset[]>('/vaccinations/presets/')
+  return data
+}
+
+export async function createVaccinePreset(name: string): Promise<VaccinePreset> {
+  const { data } = await api.post<VaccinePreset>('/vaccinations/presets/', { name })
+  return data
+}
+
+export async function deleteVaccinePreset(id: number): Promise<void> {
+  await api.delete(`/vaccinations/presets/${id}/`)
+}

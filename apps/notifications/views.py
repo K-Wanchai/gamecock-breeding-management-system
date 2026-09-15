@@ -1,20 +1,15 @@
-import json
 import logging
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.throttling import ScopedRateThrottle
-from rest_framework.views import APIView
 
-from apps.core.exceptions import AppError
 from apps.notifications import services
 from apps.notifications.models import Notification
 from apps.notifications.permissions import NotificationPermission
-from apps.notifications.serializers import LineLinkCodeSerializer, NotificationSerializer
+from apps.notifications.serializers import NotificationSerializer
 
 logger = logging.getLogger('apps.notifications')
 
@@ -46,52 +41,3 @@ class NotificationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         notification = self.get_object()
         notification = services.retry_notification(notification_id=notification.id, admin=request.user)
         return Response(NotificationSerializer(notification).data)
-
-
-class LineLinkCodeView(APIView):
-    """POST /api/v1/notifications/line/link-code/ (STEP9) — issues a short-lived
-    6-digit code the authenticated user sends as a LINE message to link their
-    LINE account (apps.notifications.services.generate_line_link_code)."""
-
-    permission_classes = (IsAuthenticated,)
-    serializer_class = LineLinkCodeSerializer
-
-    def post(self, request, *args, **kwargs):
-        code, expires_at = services.generate_line_link_code(request.user)
-        return Response(LineLinkCodeSerializer({'code': code, 'expires_at': expires_at}).data)
-
-
-class LineWebhookView(APIView):
-    """
-    POST /api/v1/notifications/line/webhook/ (STEP9) — receives LINE Messaging API
-    webhook events. Called directly by LINE's servers, not by our own frontend, so
-    it deliberately carries no JWT authentication; the X-Line-Signature HMAC check
-    (apps.notifications.services.verify_line_signature) is the security boundary
-    instead, and is verified before the payload is touched in any way.
-    """
-
-    authentication_classes = ()
-    permission_classes = (AllowAny,)
-    throttle_classes = (ScopedRateThrottle,)
-    throttle_scope = 'line_webhook'
-
-    def post(self, request, *args, **kwargs):
-        signature = request.headers.get('X-Line-Signature', '')
-        if not services.verify_line_signature(request.body, signature):
-            raise AppError('INVALID_SIGNATURE', 'Invalid X-Line-Signature header.', http_status=status.HTTP_403_FORBIDDEN)
-
-        try:
-            payload = json.loads(request.body.decode('utf-8')) if request.body else {}
-        except (ValueError, UnicodeDecodeError):
-            payload = {}
-
-        for event in payload.get('events', []):
-            try:
-                services.process_line_webhook_event(event)
-            except Exception:
-                # One malformed/unexpected event must never break the ack for the rest
-                # of the batch, or LINE will keep redelivering the whole payload.
-                logger.exception('Unexpected error while processing LINE webhook event: %r', event)
-
-        # LINE expects a fast 200 regardless of what each event resolved to.
-        return Response(status=status.HTTP_200_OK)

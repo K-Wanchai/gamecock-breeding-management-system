@@ -15,7 +15,7 @@ class Notification(TimeStampedModel):
         FAILED = 'FAILED', 'ส่งไม่สำเร็จ'
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
-    channel = models.CharField(max_length=10, default='LINE')
+    channel = models.CharField(max_length=10, default='EMAIL')
     notif_type = models.CharField(max_length=30, db_index=True)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='notifications', blank=True, null=True)
     chick = models.ForeignKey(Chick, on_delete=models.CASCADE, related_name='notifications', blank=True, null=True)

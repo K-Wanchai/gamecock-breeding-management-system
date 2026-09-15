@@ -4,7 +4,7 @@ import type { BookingStatus } from '@/types/booking'
 const STATUS_LABEL: Record<BookingStatus, string> = {
   PENDING: 'รอดำเนินการ',
   WAITING_PAYMENT: 'รอชำระเงิน',
-  PAID: 'ชำระมัดจำแล้ว',
+  PAID: 'ชำระเงินแล้ว',
   APPROVED: 'อนุมัติแล้ว/ล็อกคิว',
   IN_PROGRESS: 'กำลังดำเนินการผสม',
   COMPLETED: 'เสร็จสิ้น',
