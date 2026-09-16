@@ -351,7 +351,7 @@ function ActiveBreedingsTable() {
                     <TableRow key={booking.id}>
                       <TableCell className="font-medium">
                         <Link
-                          to={`/admin/bookings/${booking.id}`}
+                          to={`/admin/breeding/${booking.id}`}
                           className="text-primary underline-offset-4 hover:underline"
                         >
                           {booking.booking_number}

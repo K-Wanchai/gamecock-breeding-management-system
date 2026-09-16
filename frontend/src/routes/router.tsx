@@ -27,6 +27,7 @@ import { AdminBookingsPage } from '@/pages/admin/bookings-page'
 import { AdminBookingDetailPage } from '@/pages/admin/booking-detail-page'
 import { AdminPaymentsPage } from '@/pages/admin/payments-page'
 import { AdminBreedingPage } from '@/pages/admin/breeding-page'
+import { AdminBreedingDetailPage } from '@/pages/admin/breeding-detail-page'
 import { AdminChicksPage } from '@/pages/admin/chicks-page'
 import { AdminChickDetailPage } from '@/pages/admin/chick-detail-page'
 import { AdminHealthPage } from '@/pages/admin/health-page'
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
               { path: 'bookings/:id', element: <AdminBookingDetailPage /> },
               { path: 'payments', element: <AdminPaymentsPage /> },
               { path: 'breeding', element: <AdminBreedingPage /> },
+              { path: 'breeding/:id', element: <AdminBreedingDetailPage /> },
               { path: 'chicks', element: <AdminChicksPage /> },
               { path: 'chicks/:id', element: <AdminChickDetailPage /> },
               { path: 'health', element: <AdminHealthPage /> },
