@@ -27,6 +27,7 @@ function makeBooking(overrides: Partial<Booking> = {}): Booking {
     remaining_amount: '3000.00',
     status: 'PAID',
     current_breeding_stage: null,
+    latest_breeding_status: null,
     note: null,
     requested_at: '2026-08-20T00:00:00Z',
     approved_at: null,

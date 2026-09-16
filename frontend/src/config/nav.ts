@@ -13,6 +13,7 @@ import {
   Bell,
   BarChart3,
   Settings,
+  Activity,
 } from 'lucide-react'
 import type { Role } from '@/types/auth'
 
@@ -40,6 +41,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
     { label: 'แม่ไก่ของฉัน', path: '/app/hens', icon: Bird },
     { label: 'ค้นหาพ่อพันธุ์', path: '/app/breeders', icon: Search },
     { label: 'การจองของฉัน', path: '/app/bookings', icon: ShoppingCart },
+    { label: 'บันทึกไทม์ไลน์การฝากผสมและการออกไข่', path: '/app/breeding-timeline', icon: Activity },
     { label: 'การชำระเงินของฉัน', path: '/app/payments', icon: Wallet },
     { label: 'ลูกไก่ของฉัน', path: '/app/chicks', icon: Feather },
     { label: 'เอกสารของฉัน', path: '/app/documents', icon: FileText },

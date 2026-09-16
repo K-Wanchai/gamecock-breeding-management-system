@@ -14,6 +14,8 @@ import { HensPage } from '@/pages/customer/hens-page'
 import { BreedersPage } from '@/pages/customer/breeders-page'
 import { BookingsPage } from '@/pages/customer/bookings-page'
 import { BookingDetailPage } from '@/pages/customer/booking-detail-page'
+import { BreedingTimelinePage } from '@/pages/customer/breeding-timeline-page'
+import { BreedingTimelineDetailPage } from '@/pages/customer/breeding-timeline-detail-page'
 import { PaymentsPage } from '@/pages/customer/payments-page'
 import { ChicksPage } from '@/pages/customer/chicks-page'
 import { ChickDetailPage } from '@/pages/customer/chick-detail-page'
@@ -99,6 +101,8 @@ export const router = createBrowserRouter([
               { path: 'breeders', element: <BreedersPage /> },
               { path: 'bookings', element: <BookingsPage /> },
               { path: 'bookings/:id', element: <BookingDetailPage /> },
+              { path: 'breeding-timeline', element: <BreedingTimelinePage /> },
+              { path: 'breeding-timeline/:id', element: <BreedingTimelineDetailPage /> },
               { path: 'payments', element: <PaymentsPage /> },
               { path: 'chicks', element: <ChicksPage /> },
               { path: 'chicks/:id', element: <ChickDetailPage /> },

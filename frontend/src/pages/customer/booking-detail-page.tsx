@@ -32,12 +32,9 @@ import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { PaymentStatusBadge, PAYMENT_TYPE_LABEL } from '@/components/payments/payment-status-badge'
 import { PaymentFormDialog } from '@/components/payments/payment-form-dialog'
 import { PromptPayQR } from '@/components/payments/promptpay-qr'
-import { BreedingTimeline } from '@/components/breeding/breeding-timeline'
-import { EggHatchingSection } from '@/components/breeding/egg-hatching-section'
 import { DocumentList } from '@/components/documents/document-list'
 import { useBookingQuery, useCancelBooking } from '@/hooks/use-bookings'
 import { usePaymentsQuery, useResubmitPayment } from '@/hooks/use-payments'
-import { useBreedingEventsQuery } from '@/hooks/use-breeding'
 import { useFarmSettingQuery } from '@/hooks/use-settings'
 import { toastApiError } from '@/lib/toast'
 import { validateImageFile } from '@/lib/validate-image-file'
@@ -384,7 +381,6 @@ export function BookingDetailPage() {
 
   const { data: booking, isLoading, isError, refetch } = useBookingQuery(bookingId)
   const cancelBooking = useCancelBooking()
-  const { data: breedingEvents } = useBreedingEventsQuery({ booking: bookingId })
   const { data: farmSetting } = useFarmSettingQuery()
 
   if (isLoading) return <SectionLoading />
@@ -460,21 +456,20 @@ export function BookingDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Breeding timeline — visible once admin starts the process */}
-      {['IN_PROGRESS', 'COMPLETED', 'APPROVED'].includes(booking.status) && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">ความคืบหน้าการผสมพันธุ์</CardTitle></CardHeader>
-          <CardContent>
-            <BreedingTimeline events={breedingEvents?.results ?? []} />
-          </CardContent>
-        </Card>
-      )}
-
-      {['IN_PROGRESS', 'COMPLETED'].includes(booking.status) && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">ไข่และการฟัก</CardTitle></CardHeader>
-          <CardContent>
-            <EggHatchingSection bookingId={bookingId} />
+      {/* Link to dedicated breeding timeline page */}
+      {['APPROVED', 'IN_PROGRESS', 'COMPLETED'].includes(booking.status) && (
+        <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950">
+          <CardContent className="flex items-center justify-between gap-3 p-4">
+            <div>
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">บันทึกไทม์ไลน์การฝากผสมและการออกไข่</p>
+              <p className="text-xs text-emerald-700 dark:text-emerald-300">ติดตามความคืบหน้าการผสมพันธุ์และการออกไข่</p>
+            </div>
+            <Link
+              to={`/app/breeding-timeline/${bookingId}`}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 transition-colors"
+            >
+              ดูไทม์ไลน์
+            </Link>
           </CardContent>
         </Card>
       )}

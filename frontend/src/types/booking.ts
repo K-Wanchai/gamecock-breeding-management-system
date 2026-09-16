@@ -70,3 +70,40 @@ export interface BookingListParams {
   search?: string
   booking_date?: string
 }
+
+/* ─── Timeline (GET /api/v1/bookings/{id}/timeline/) ─── */
+
+export interface BookingTimelineBreedingEvent {
+  id: number
+  status: string
+  status_display: string
+  event_date: string
+  description: string | null
+  created_at: string
+}
+
+export interface BookingTimelineEgg {
+  id: number
+  total_eggs: number
+  good_eggs: number
+  bad_eggs: number
+  good_egg_rate: string
+  egg_date: string
+  incubation_date: string | null
+  remark: string | null
+  created_at: string
+}
+
+export interface BookingTimeline {
+  id: number
+  booking_number: string
+  status: BookingStatus
+  status_display: string
+  hen: BookingHenSummary
+  breeder: BookingBreederSummary
+  booking_date: string
+  queue_no: number | null
+  current_breeding_stage: { status: string; status_display: string; event_date: string } | null
+  breeding_events: BookingTimelineBreedingEvent[]
+  eggs: BookingTimelineEgg[]
+}

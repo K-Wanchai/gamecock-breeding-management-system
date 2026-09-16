@@ -1,5 +1,5 @@
 import { api } from '@/lib/api/client'
-import type { Booking, BookingCreatePayload, BookingListParams } from '@/types/booking'
+import type { Booking, BookingCreatePayload, BookingListParams, BookingTimeline } from '@/types/booking'
 import type { PaginatedResponse } from '@/types/api'
 
 export async function listBookings(params: BookingListParams): Promise<PaginatedResponse<Booking>> {
@@ -26,5 +26,11 @@ export async function cancelBooking(id: number, reason?: string): Promise<Bookin
 /** ADMIN only — requires the booking to be PAID; locks a queue slot (apps.bookings.services.approve_booking). */
 export async function approveBooking(id: number): Promise<Booking> {
   const { data } = await api.patch<Booking>(`/bookings/${id}/approve/`)
+  return data
+}
+
+/** Customer-facing combined timeline: breeding events + eggs in one request. */
+export async function getBookingTimeline(id: number): Promise<BookingTimeline> {
+  const { data } = await api.get<BookingTimeline>(`/bookings/${id}/timeline/`)
   return data
 }
