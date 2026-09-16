@@ -7,7 +7,9 @@ from rest_framework.response import Response
 from apps.bookings import services
 from apps.bookings.models import Booking
 from apps.bookings.permissions import BookingActionPermission
-from apps.bookings.serializers import BookingCancelSerializer, BookingCreateSerializer, BookingSerializer
+from apps.bookings.serializers import (
+    BookingCancelSerializer, BookingCreateSerializer, BookingSerializer, BookingTimelineSerializer,
+)
 
 
 class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -70,3 +72,30 @@ class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
             booking_id=booking.id, actor=request.user, reason=serializer.validated_data.get('reason', ''),
         )
         return Response(BookingSerializer(booking).data)
+
+    @action(detail=True, methods=['get'])
+    def timeline(self, request, pk=None):
+        """
+        GET /api/v1/bookings/{id}/timeline/
+
+        Returns the booking header, all breeding-stage events in chronological
+        order, and all egg-laying records in chronological order so the customer
+        can track their hen's progress in a single request.
+        Ownership is enforced by get_object() (404 for any booking that doesn't
+        belong to the requesting customer).
+        """
+        from django.db.models import Prefetch
+
+        from apps.breeding.models import BreedingEvent, Egg
+
+        booking = self.get_object()
+        booking = (
+            Booking.objects
+            .select_related('customer', 'hen', 'breeder')
+            .prefetch_related(
+                Prefetch('breeding_events', queryset=BreedingEvent.objects.order_by('event_date', 'id')),
+                Prefetch('eggs', queryset=Egg.objects.order_by('egg_date', 'id')),
+            )
+            .get(pk=booking.pk)
+        )
+        return Response(BookingTimelineSerializer(booking).data)

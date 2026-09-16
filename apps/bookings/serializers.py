@@ -64,3 +64,73 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
 class BookingCancelSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, max_length=255)
+
+
+# ---------------------------------------------------------------------------
+# Timeline (STEP_TIMELINE) — customer-facing read-only endpoint
+# ---------------------------------------------------------------------------
+
+class _TimelineBreedingEventSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    status = serializers.CharField()
+    status_display = serializers.SerializerMethodField()
+    event_date = serializers.DateField()
+    description = serializers.CharField(allow_null=True)
+    created_at = serializers.DateTimeField()
+
+    def get_status_display(self, obj):
+        return obj.get_status_display()
+
+
+class _TimelineEggSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    total_eggs = serializers.IntegerField()
+    good_eggs = serializers.IntegerField()
+    bad_eggs = serializers.IntegerField()
+    good_egg_rate = serializers.SerializerMethodField()
+    egg_date = serializers.DateField()
+    incubation_date = serializers.DateField(allow_null=True)
+    remark = serializers.CharField(allow_null=True)
+    created_at = serializers.DateTimeField()
+
+    def get_good_egg_rate(self, obj):
+        from decimal import ROUND_HALF_UP, Decimal
+        if obj.total_eggs == 0:
+            return '0.00'
+        rate = Decimal(obj.good_eggs) / Decimal(obj.total_eggs) * Decimal('100')
+        return str(rate.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
+
+
+class BookingTimelineSerializer(serializers.Serializer):
+    """
+    GET /api/v1/bookings/{id}/timeline/ — combined timeline for a single booking.
+    Returns the booking header, all breeding-stage events in chronological order,
+    and all egg-laying records in chronological order so a customer can track
+    their hen's progress without making separate requests.
+    """
+
+    id = serializers.IntegerField()
+    booking_number = serializers.CharField()
+    status = serializers.CharField()
+    status_display = serializers.SerializerMethodField()
+    hen = _HenSummarySerializer()
+    breeder = _BreederSummarySerializer()
+    booking_date = serializers.DateField()
+    queue_no = serializers.IntegerField(allow_null=True)
+    current_breeding_stage = serializers.SerializerMethodField()
+    breeding_events = _TimelineBreedingEventSerializer(many=True)
+    eggs = _TimelineEggSerializer(many=True)
+
+    def get_status_display(self, obj):
+        return obj.get_status_display()
+
+    def get_current_breeding_stage(self, obj):
+        events = list(obj.breeding_events.all())
+        if not events:
+            return None
+        last = events[-1]
+        return {
+            'status': last.status,
+            'status_display': last.get_status_display(),
+            'event_date': str(last.event_date),
+        }

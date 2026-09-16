@@ -16,6 +16,8 @@ from apps.accounts.models import User
 from apps.bookings import services
 from apps.bookings.models import Booking
 from apps.breeders.models import Breeder
+from apps.breeding import services as breeding_services
+from apps.breeding.models import BreedingEvent, Egg
 from apps.core.exceptions import AppError
 from apps.hens.models import Hen
 
@@ -301,6 +303,142 @@ class BookingCRUDTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['booking_date'], FUTURE_DATE.isoformat())
+
+
+class BookingTimelineTests(APITestCase):
+    """
+    GET /api/v1/bookings/{id}/timeline/ — customer-facing timeline endpoint
+    that combines breeding events and egg-laying records in one response.
+    """
+
+    def setUp(self):
+        self.admin = User.objects.create_user(username='tl_admin', password='x', role=User.Role.ADMIN)
+        self.customer = User.objects.create_user(username='tl_customer', password='x', role=User.Role.CUSTOMER)
+        self.stranger = User.objects.create_user(username='tl_stranger', password='x', role=User.Role.CUSTOMER)
+
+        self.breeder = Breeder.objects.create(
+            name='พ่อพันธุ์ไทม์ไลน์', service_rate=Decimal('1000.00'), default_monthly_quota=5,
+            status=Breeder.Status.ACTIVE, created_by=self.admin,
+        )
+        self.hen = Hen.objects.create(owner=self.customer, name='แม่ไก่ไทม์ไลน์', status=Hen.Status.ACTIVE)
+        self.booking = services.create_booking(
+            customer=self.customer, hen=self.hen, breeder=self.breeder, booking_date=FUTURE_DATE,
+        )
+        self.booking.status = Booking.Status.PAID
+        self.booking.paid_amount = self.booking.deposit_amount
+        self.booking.save(update_fields=['status', 'paid_amount'])
+        services.approve_booking(booking_id=self.booking.id, admin=self.admin)
+        self.booking.refresh_from_db()
+
+    def timeline_url(self, pk):
+        return reverse('bookings:booking-timeline', args=[pk])
+
+    # --- Authentication ---
+
+    def test_timeline_requires_authentication(self):
+        response = self.client.get(self.timeline_url(self.booking.id))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # --- Ownership ---
+
+    def test_stranger_cannot_view_others_timeline(self):
+        self.client.force_authenticate(self.stranger)
+        response = self.client.get(self.timeline_url(self.booking.id))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_admin_can_view_any_timeline(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(self.timeline_url(self.booking.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # --- Response structure ---
+
+    def test_empty_timeline_has_correct_shape(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.get(self.timeline_url(self.booking.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(data['booking_number'], self.booking.booking_number)
+        self.assertIn('status', data)
+        self.assertIn('status_display', data)
+        self.assertIn('hen', data)
+        self.assertIn('breeder', data)
+        self.assertEqual(data['breeding_events'], [])
+        self.assertEqual(data['eggs'], [])
+        self.assertIsNone(data['current_breeding_stage'])
+
+    def test_timeline_shows_breeding_events_in_chronological_order(self):
+        today = date.today()
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.RECEIVED,
+            event_date=today, description='รับแม่ไก่', recorded_by=self.admin,
+        )
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.BREEDING,
+            event_date=today, description='กำลังผสม', recorded_by=self.admin,
+        )
+
+        self.client.force_authenticate(self.customer)
+        response = self.client.get(self.timeline_url(self.booking.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        events = response.data['breeding_events']
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[0]['status'], BreedingEvent.Status.RECEIVED)
+        self.assertEqual(events[0]['status_display'], 'รับแม่ไก่เข้าฟาร์ม')
+        self.assertEqual(events[1]['status'], BreedingEvent.Status.BREEDING)
+
+    def test_current_breeding_stage_reflects_latest_event(self):
+        today = date.today()
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.RECEIVED,
+            event_date=today, recorded_by=self.admin,
+        )
+
+        self.client.force_authenticate(self.customer)
+        response = self.client.get(self.timeline_url(self.booking.id))
+        stage = response.data['current_breeding_stage']
+        self.assertIsNotNone(stage)
+        self.assertEqual(stage['status'], BreedingEvent.Status.RECEIVED)
+        self.assertEqual(stage['status_display'], 'รับแม่ไก่เข้าฟาร์ม')
+
+    def test_timeline_shows_eggs_in_chronological_order(self):
+        today = date.today()
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.RECEIVED,
+            event_date=today, recorded_by=self.admin,
+        )
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.BREEDING,
+            event_date=today, recorded_by=self.admin,
+        )
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.BREEDING_COMPLETED,
+            event_date=today, recorded_by=self.admin,
+        )
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.WAITING_EGG,
+            event_date=today, recorded_by=self.admin,
+        )
+        breeding_services.record_breeding_event(
+            booking_id=self.booking.id, status=BreedingEvent.Status.EGG_LAID,
+            event_date=today, recorded_by=self.admin,
+        )
+        breeding_services.record_egg(
+            booking_id=self.booking.id, total_eggs=10, good_eggs=8, bad_eggs=1,
+            egg_date=today, recorded_by=self.admin,
+        )
+
+        self.client.force_authenticate(self.customer)
+        response = self.client.get(self.timeline_url(self.booking.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        eggs = response.data['eggs']
+        self.assertEqual(len(eggs), 1)
+        self.assertEqual(eggs[0]['total_eggs'], 10)
+        self.assertEqual(eggs[0]['good_eggs'], 8)
+        self.assertEqual(eggs[0]['bad_eggs'], 1)
+        self.assertEqual(eggs[0]['good_egg_rate'], '80.00')
 
 
 class ConcurrentBookingTests(TransactionTestCase):
