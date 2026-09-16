@@ -20,9 +20,7 @@ import { formatThaiDate } from '@/lib/utils'
 
 const PAGE_SIZE = 20
 
-/** Bookings that have completed the breeding cycle (hen brooded, chicks recorded).
- *  Admin can click into each booking to record health/vaccination for the chicks. */
-export function AdminChicksPage() {
+export function CustomerCareListPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search)
@@ -31,27 +29,31 @@ export function AdminChicksPage() {
     page,
     search: debouncedSearch || undefined,
     status: 'COMPLETED',
-    hen_brooding: true,
-    clip_ready: false,
   })
 
-  const careBookings = data?.results ?? []
+  const careBookings = data?.results.filter((b) => b.hen_brooding) ?? []
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">บันทึกสุขภาพและการอนุบาลไก่</h1>
-
-      <div className="flex flex-wrap gap-3">
-        <Input
-          placeholder="ค้นหาเลขที่จอง, ลูกค้า, พ่อพันธุ์..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
-            setPage(1)
-          }}
-          className="max-w-xs"
-        />
+      <div>
+        <h1 className="text-2xl font-semibold flex items-center gap-2">
+          <HeartPulse className="size-6" />
+          ติดตามสุขภาพและการอนุบาลลูกไก่
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          ติดตามบันทึกสุขภาพและการฉีดวัคซีนลูกไก่ของท่าน
+        </p>
       </div>
+
+      <Input
+        placeholder="ค้นหาเลขที่จอง, พ่อพันธุ์..."
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value)
+          setPage(1)
+        }}
+        className="max-w-xs"
+      />
 
       {isLoading ? (
         <SectionLoading />
@@ -61,7 +63,7 @@ export function AdminChicksPage() {
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center text-muted-foreground">
           <HeartPulse className="mb-2 size-10 opacity-30" />
           <p>ยังไม่มีข้อมูลการอนุบาลไก่</p>
-          <p className="mt-1 text-xs">ลูกไก่จะปรากฏที่นี่หลังจากบันทึกผลการฟักแล้ว</p>
+          <p className="mt-1 text-xs">จะแสดงที่นี่หลังจากไก่ฟักออกและเริ่มการอนุบาล</p>
         </div>
       ) : (
         <>
@@ -70,18 +72,16 @@ export function AdminChicksPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>เลขที่จอง</TableHead>
-                  <TableHead>ลูกค้า</TableHead>
                   <TableHead>แม่ไก่</TableHead>
                   <TableHead>พ่อพันธุ์</TableHead>
                   <TableHead>วันที่แม่ฟัก</TableHead>
-                  <TableHead className="text-right">ดำเนินการ</TableHead>
+                  <TableHead className="text-right">ดูข้อมูล</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {careBookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell className="font-medium">{booking.booking_number}</TableCell>
-                    <TableCell>{booking.customer.username}</TableCell>
                     <TableCell>
                       {booking.hen.name}
                       {booking.hen.breed && (
@@ -98,11 +98,11 @@ export function AdminChicksPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Link
-                        to={`/admin/care/${booking.id}`}
+                        to={`/app/care/${booking.id}`}
                         className="inline-flex items-center gap-1 text-sm text-primary underline-offset-4 hover:underline"
                       >
                         <HeartPulse className="size-3.5" />
-                        บันทึกสุขภาพ
+                        ดูบันทึก
                       </Link>
                     </TableCell>
                   </TableRow>

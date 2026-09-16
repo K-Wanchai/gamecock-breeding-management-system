@@ -19,11 +19,13 @@ class FarmSettingView(APIView):
         return [IsAdminRole()]
 
     def get(self, request):
-        return Response(FarmSettingSerializer(FarmSetting.load()).data)
+        ctx = {'request': request}
+        return Response(FarmSettingSerializer(FarmSetting.load(), context=ctx).data)
 
     def patch(self, request):
         setting = FarmSetting.load()
-        serializer = FarmSettingSerializer(setting, data=request.data, partial=True)
+        ctx = {'request': request}
+        serializer = FarmSettingSerializer(setting, data=request.data, partial=True, context=ctx)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

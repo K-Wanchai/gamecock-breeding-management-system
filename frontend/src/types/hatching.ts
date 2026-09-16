@@ -33,6 +33,7 @@ export interface Hatching {
 
 export interface HatchingListParams {
   egg?: number
+  booking?: number
 }
 
 export interface HatchingStartPayload {

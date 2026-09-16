@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
@@ -112,13 +113,12 @@ export function VaccinationFormDialog({ open, onOpenChange, chick }: Vaccination
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="vaccination_date">วันที่ฉีด</Label>
-              <Input
+              <ThaiDateInput
                 id="vaccination_date"
-                type="date"
                 min={pickedChick?.birth_date}
                 max={todayStr()}
                 value={vaccinationDate}
-                onChange={(e) => setVaccinationDate(e.target.value)}
+                onValueChange={setVaccinationDate}
                 required
               />
             </div>

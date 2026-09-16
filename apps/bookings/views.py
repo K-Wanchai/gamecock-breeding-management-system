@@ -1,3 +1,6 @@
+import io
+
+from django.http import FileResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -21,7 +24,7 @@ class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
 
     permission_classes = (BookingActionPermission,)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filterset_fields = ('status', 'breeder', 'booking_year', 'booking_month', 'booking_date')
+    filterset_fields = ('status', 'breeder', 'booking_year', 'booking_month', 'booking_date', 'hen_brooding', 'clip_ready')
     search_fields = ('booking_number', 'hen__name', 'breeder__name')
     ordering_fields = ('booking_date', 'created_at', 'status')
     ordering = ('-created_at',)
@@ -86,16 +89,58 @@ class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
         """
         from django.db.models import Prefetch
 
-        from apps.breeding.models import BreedingEvent, Egg
+        from apps.breeding.models import BreedingEvent, Egg, InseminationRecord
 
         booking = self.get_object()
         booking = (
             Booking.objects
             .select_related('customer', 'hen', 'breeder')
             .prefetch_related(
+                Prefetch('inseminations', queryset=InseminationRecord.objects.order_by('record_date', 'session_number')),
                 Prefetch('breeding_events', queryset=BreedingEvent.objects.order_by('event_date', 'id')),
                 Prefetch('eggs', queryset=Egg.objects.order_by('egg_date', 'id')),
             )
             .get(pk=booking.pk)
         )
         return Response(BookingTimelineSerializer(booking).data)
+
+    @action(detail=True, methods=['patch'])
+    def mark_brooding(self, request, pk=None):
+        """PATCH /api/v1/bookings/{id}/mark_brooding/ — ADMIN only. Sets hen_brooding=True."""
+        booking = self.get_object()
+        booking = services.mark_hen_brooding(booking_id=booking.id, admin=request.user)
+        return Response(BookingSerializer(booking).data)
+
+    @action(detail=True, methods=['patch'])
+    def mark_clip_ready(self, request, pk=None):
+        """PATCH /api/v1/bookings/{id}/mark_clip_ready/ — ADMIN only. Signals that health recording is done."""
+        booking = self.get_object()
+        booking = services.mark_clip_ready(booking_id=booking.id, admin=request.user)
+        return Response(BookingSerializer(booking).data)
+
+    @action(detail=True, methods=['patch'])
+    def complete(self, request, pk=None):
+        """PATCH /api/v1/bookings/{id}/complete/ — ADMIN only. Transitions IN_PROGRESS → COMPLETED."""
+        booking = self.get_object()
+        booking = services.complete_booking(booking_id=booking.id, admin=request.user)
+        return Response(BookingSerializer(booking).data)
+
+    @action(detail=True, methods=['get'])
+    def batch_certificate(self, request, pk=None):
+        """GET /api/v1/bookings/{id}/batch_certificate/ — ADMIN only. Streams combined pedigree PDF."""
+        booking = self.get_object()
+        from apps.documents.pdf import render_batch_certificate
+        pdf_bytes = render_batch_certificate(booking)
+        resp = FileResponse(io.BytesIO(pdf_bytes), content_type='application/pdf')
+        resp['Content-Disposition'] = f'attachment; filename="cert-{booking.booking_number}.pdf"'
+        return resp
+
+    @action(detail=True, methods=['get'])
+    def delivery_label(self, request, pk=None):
+        """GET /api/v1/bookings/{id}/delivery_label/ — ADMIN only. Streams delivery address label PDF."""
+        booking = self.get_object()
+        from apps.documents.pdf import render_delivery_label
+        pdf_bytes = render_delivery_label(booking)
+        resp = FileResponse(io.BytesIO(pdf_bytes), content_type='application/pdf')
+        resp['Content-Disposition'] = f'attachment; filename="label-{booking.booking_number}.pdf"'
+        return resp

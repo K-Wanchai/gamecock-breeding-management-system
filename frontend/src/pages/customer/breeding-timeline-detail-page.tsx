@@ -1,51 +1,43 @@
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Circle, Egg } from 'lucide-react'
+import { ArrowLeft, Bird, Egg as EggIcon, Syringe } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SectionLoading } from '@/components/shared/loading'
 import { QueryError } from '@/components/shared/query-error'
 import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
 import { useBookingTimelineQuery } from '@/hooks/use-bookings'
-import { BREEDING_EVENT_LABEL, BREEDING_EVENT_STAGES } from '@/types/breeding'
-import type { BookingTimeline, BookingTimelineBreedingEvent, BookingTimelineEgg } from '@/types/booking'
+import { formatThaiDate } from '@/lib/utils'
+import type {
+  BookingTimeline,
+  BookingTimelineInsemination,
+  BookingTimelineEgg,
+} from '@/types/booking'
 
-/* ─── Visual breeding stage pipeline ───────────────────────────────────── */
+/* ─── Insemination session list ─────────────────────────────────────────── */
 
-function BreedingPipeline({ events }: { events: BookingTimelineBreedingEvent[] }) {
-  const doneStatuses = new Set(events.map((e) => e.status))
-  const eventByStatus = Object.fromEntries(events.map((e) => [e.status, e]))
+function InseminationList({ inseminations }: { inseminations: BookingTimelineInsemination[] }) {
+  if (inseminations.length === 0) {
+    return <p className="text-sm text-muted-foreground">ยังไม่มีบันทึกการฉีดน้ำเชื้อ</p>
+  }
 
   return (
     <ol className="flex flex-col gap-0">
-      {BREEDING_EVENT_STAGES.map((stage, idx) => {
-        const isDone = doneStatuses.has(stage)
-        const isLast = idx === BREEDING_EVENT_STAGES.length - 1
-        const event = eventByStatus[stage] as BookingTimelineBreedingEvent | undefined
-
+      {inseminations.map((rec, idx) => {
+        const isLast = idx === inseminations.length - 1
         return (
-          <li key={stage} className="flex gap-3">
-            {/* Icon + connector line */}
+          <li key={rec.id} className="flex gap-3">
             <div className="flex flex-col items-center">
-              {isDone ? (
-                <CheckCircle2 className="size-5 shrink-0 text-emerald-500 mt-0.5" />
-              ) : (
-                <Circle className="size-5 shrink-0 text-muted-foreground/30 mt-0.5" />
-              )}
-              {!isLast && (
-                <div className={['w-0.5 flex-1 my-1 rounded', isDone ? 'bg-emerald-300' : 'bg-muted'].join(' ')} />
-              )}
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold mt-0.5 border border-primary/30">
+                {rec.session_number}
+              </div>
+              {!isLast && <div className="w-0.5 flex-1 my-1 rounded bg-muted" />}
             </div>
-
-            {/* Content */}
-            <div className={['flex flex-col pb-5', isLast ? 'pb-0' : ''].join(' ')}>
-              <span className={['text-sm font-medium', isDone ? 'text-foreground' : 'text-muted-foreground/50'].join(' ')}>
-                {BREEDING_EVENT_LABEL[stage]}
+            <div className={`flex flex-col pb-4 ${isLast ? 'pb-0' : ''}`}>
+              <span className="text-sm font-medium">
+                ครั้งที่ {rec.session_number} — {formatThaiDate(rec.record_date)}
               </span>
-              {event && (
-                <span className="text-xs text-muted-foreground">{event.event_date}</span>
-              )}
-              {event?.description && (
-                <span className="mt-0.5 text-xs text-muted-foreground">{event.description}</span>
+              {rec.note && (
+                <span className="mt-0.5 text-xs text-muted-foreground">{rec.note}</span>
               )}
             </div>
           </li>
@@ -65,8 +57,8 @@ function EggCard({ egg }: { egg: BookingTimelineEgg }) {
     <div className="rounded-lg border p-3 flex flex-col gap-2">
       <div className="flex flex-wrap justify-between items-center gap-2">
         <div className="flex items-center gap-2">
-          <Egg className="size-4 text-amber-500" />
-          <span className="text-sm font-medium">วันที่ออกไข่: {egg.egg_date}</span>
+          <EggIcon className="size-4 text-amber-500" />
+          <span className="text-sm font-medium">วันที่ออกไข่: {formatThaiDate(egg.egg_date)}</span>
         </div>
         <Badge variant="outline" className={`text-xs ${rateColor}`}>
           อัตราไข่ดี {egg.good_egg_rate}%
@@ -92,9 +84,7 @@ function EggCard({ egg }: { egg: BookingTimelineEgg }) {
       </div>
 
       {egg.incubation_date && (
-        <p className="text-xs text-muted-foreground">
-          วันที่เข้าตู้ฟัก: {egg.incubation_date}
-        </p>
+        <p className="text-xs text-muted-foreground">วันที่เข้าตู้ฟัก: {egg.incubation_date}</p>
       )}
       {egg.remark && (
         <p className="text-xs text-muted-foreground">หมายเหตุ: {egg.remark}</p>
@@ -128,24 +118,41 @@ function TimelineContent({ timeline }: { timeline: BookingTimeline }) {
         <BookingStatusBadge status={timeline.status} />
       </div>
 
-      {/* Breeding stage pipeline */}
+      {/* Brooding status */}
+      {timeline.hen_brooding && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950 p-3 text-sm">
+          <Bird className="size-4 text-amber-600 shrink-0" />
+          <span className="text-amber-800 dark:text-amber-200 font-medium">
+            แม่ไก่เข้าฟักแล้ว — กำลังฟักไข่
+          </span>
+          {timeline.brooding_started_at && (
+            <Badge variant="outline" className="ml-auto text-amber-700 border-amber-300 shrink-0">
+              {formatThaiDate(timeline.brooding_started_at)}
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Insemination records */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">ขั้นตอนการผสมพันธุ์</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Syringe className="size-4" />
+            บันทึกการฉีดน้ำเชื้อ
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          {timeline.breeding_events.length === 0 ? (
-            <p className="text-sm text-muted-foreground">ยังไม่มีข้อมูลความคืบหน้าการผสมพันธุ์</p>
-          ) : (
-            <BreedingPipeline events={timeline.breeding_events} />
-          )}
+          <InseminationList inseminations={timeline.inseminations} />
         </CardContent>
       </Card>
 
       {/* Egg records */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">การออกไข่</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <EggIcon className="size-4" />
+            การออกไข่
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {timeline.eggs.length === 0 ? (
@@ -155,6 +162,14 @@ function TimelineContent({ timeline }: { timeline: BookingTimeline }) {
               {timeline.eggs.map((egg) => (
                 <EggCard key={egg.id} egg={egg} />
               ))}
+              {/* timeline.eggs is ordered oldest-first → last element = latest survey */}
+              <div className="mt-1 flex items-center justify-between rounded-lg bg-muted px-4 py-2.5">
+                <span className="text-sm font-medium text-muted-foreground">ไข่ดีล่าสุด (สำรวจล่าสุด)</span>
+                <span className="text-lg font-bold">
+                  {timeline.eggs[timeline.eggs.length - 1]?.good_eggs ?? 0}{' '}
+                  <span className="text-sm font-normal text-muted-foreground">ฟอง</span>
+                </span>
+              </div>
             </div>
           )}
         </CardContent>

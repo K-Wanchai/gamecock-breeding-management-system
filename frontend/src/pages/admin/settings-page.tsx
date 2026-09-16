@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Plus, Trash2, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,17 +23,36 @@ import type { FarmSetting } from '@/lib/api/settings'
 function FarmInfoForm({ initial }: { initial: FarmSetting }) {
   const [farmName, setFarmName] = useState(initial.farm_name)
   const [farmAddress, setFarmAddress] = useState(initial.farm_address)
+  const [ownerName, setOwnerName] = useState(initial.owner_name)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(initial.farm_logo)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const update = useUpdateFarmSetting()
 
   useEffect(() => {
     setFarmName(initial.farm_name)
     setFarmAddress(initial.farm_address)
-  }, [initial.farm_name, initial.farm_address])
+    setOwnerName(initial.owner_name)
+    setLogoPreview(initial.farm_logo)
+  }, [initial.farm_name, initial.farm_address, initial.owner_name, initial.farm_logo])
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+  }
+
+  function handleRemoveLogo() {
+    setLogoFile(null)
+    setLogoPreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     update.mutate(
-      { farm_name: farmName, farm_address: farmAddress },
+      { farm_name: farmName, farm_address: farmAddress, owner_name: ownerName, farm_logo_file: logoFile ?? undefined },
       {
         onSuccess: () => toast.success('บันทึกข้อมูลฟาร์มแล้ว'),
         onError: toastApiError,
@@ -49,6 +68,51 @@ function FarmInfoForm({ initial }: { initial: FarmSetting }) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Logo */}
+          <div className="flex flex-col gap-2">
+            <Label>โลโก้ฟาร์ม</Label>
+            <div className="flex items-center gap-4">
+              {logoPreview ? (
+                <div className="relative size-20 shrink-0">
+                  <img
+                    src={logoPreview}
+                    alt="โลโก้ฟาร์ม"
+                    className="size-20 rounded-lg object-cover border"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    className="absolute -right-2 -top-2 rounded-full bg-destructive p-0.5 text-destructive-foreground shadow"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex size-20 shrink-0 items-center justify-center rounded-lg border border-dashed bg-muted text-muted-foreground">
+                  <Upload className="size-6" />
+                </div>
+              )}
+              <div className="flex flex-col gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {logoPreview ? 'เปลี่ยนรูป' : 'อัปโหลดโลโก้'}
+                </Button>
+                <p className="text-xs text-muted-foreground">PNG, JPG ขนาดไม่เกิน 5MB</p>
+              </div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
           <div className="flex flex-col gap-2">
             <Label htmlFor="farm_name">ชื่อฟาร์ม</Label>
             <Input
@@ -58,6 +122,16 @@ function FarmInfoForm({ initial }: { initial: FarmSetting }) {
               placeholder="เช่น ฟาร์มไก่ชนสมชาย"
               required
             />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="owner_name">ชื่อเจ้าของฟาร์ม</Label>
+            <Input
+              id="owner_name"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              placeholder="เช่น บิ๊กโค้ก"
+            />
+            <p className="text-xs text-muted-foreground">แสดงในใบรับรองสายพันธุ์</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="farm_address">ที่อยู่ฟาร์ม</Label>

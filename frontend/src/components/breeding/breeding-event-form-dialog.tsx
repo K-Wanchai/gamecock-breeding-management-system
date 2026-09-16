@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -68,12 +69,11 @@ export function BreedingEventFormDialog({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="event_date">วันที่</Label>
-            <Input
+            <ThaiDateInput
               id="event_date"
-              type="date"
               max={todayStr()}
               value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
+              onValueChange={setEventDate}
               required
             />
           </div>

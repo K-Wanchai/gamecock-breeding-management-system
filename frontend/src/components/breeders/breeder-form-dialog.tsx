@@ -1,8 +1,9 @@
-import { useRef, useState, type FormEvent } from 'react'
+﻿import { useRef, useState, type FormEvent } from 'react'
 import { ImagePlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -190,9 +191,8 @@ export function BreederFormDialog({ open, onOpenChange, breeder }: BreederFormDi
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="service_start_date">วันที่เริ่มให้บริการ</Label>
-            <Input
+            <ThaiDateInput
               id="service_start_date"
-              type="date"
               value={form.service_start_date}
               onChange={(e) => setForm((prev) => ({ ...prev, service_start_date: e.target.value }))}
             />

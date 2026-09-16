@@ -43,8 +43,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
     { label: 'การจองของฉัน', path: '/app/bookings', icon: ShoppingCart },
     { label: 'บันทึกไทม์ไลน์การฝากผสมและการออกไข่', path: '/app/breeding-timeline', icon: Activity },
     { label: 'การชำระเงินของฉัน', path: '/app/payments', icon: Wallet },
-    { label: 'ลูกไก่ของฉัน', path: '/app/chicks', icon: Feather },
-    { label: 'เอกสารของฉัน', path: '/app/documents', icon: FileText },
+    { label: 'ติดตามสุขภาพและการอนุบาลลูกไก่', path: '/app/care', icon: HeartPulse },
     { label: 'แจ้งเตือนของฉัน', path: '/app/notifications', icon: Bell },
   ],
 }
@@ -88,21 +87,18 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
   },
   {
     groupLabel: 'Process 5 · ผลผลิตและลูกไก่',
-    description: 'ลูกไก่ สุขภาพ วัคซีน และเอกสาร',
+    description: 'บันทึกสุขภาพและออกเอกสารลูกไก่',
     items: [
-      { label: 'ลูกไก่', path: '/admin/chicks', icon: Feather },
-      { label: 'สุขภาพ', path: '/admin/health', icon: HeartPulse },
-      { label: 'วัคซีน', path: '/admin/vaccinations', icon: Syringe },
-      { label: 'เอกสาร', path: '/admin/documents', icon: FileText },
+      { label: 'บันทึกสุขภาพและการอนุบาลไก่', path: '/admin/chicks', icon: HeartPulse },
+      { label: 'จัดทำเลขกิ๊ปและออกใบประวัติ', path: '/admin/wing-clip', icon: FileText },
     ],
   },
   {
     groupLabel: 'ทั่วไป',
-    description: 'การแจ้งเตือน รายงาน และการค้นหา',
+    description: 'การแจ้งเตือน และรายงาน',
     items: [
       { label: 'การแจ้งเตือน', path: '/admin/notifications', icon: Bell },
       { label: 'รายงาน', path: '/admin/reports', icon: BarChart3 },
-      { label: 'ค้นหา', path: '/admin/search', icon: Search },
     ],
   },
 ]

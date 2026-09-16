@@ -61,6 +61,27 @@ export interface Egg {
   updated_at: string
 }
 
+export interface InseminationRecord {
+  id: number
+  booking: BookingSummary
+  session_number: number
+  record_date: string
+  note: string
+  recorded_by: { id: number; username: string }
+  created_at: string
+  updated_at: string
+}
+
+export interface InseminationRecordCreatePayload {
+  booking: number
+  record_date: string
+  note?: string
+}
+
+export interface InseminationRecordListParams {
+  booking?: number
+}
+
 export interface BreedingEventListParams {
   booking?: number
 }

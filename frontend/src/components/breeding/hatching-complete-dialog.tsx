@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -112,13 +113,12 @@ export function HatchingCompleteDialog({ open, onOpenChange, hatching }: Hatchin
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="completed_at">วันที่ฟักเสร็จสิ้น</Label>
-            <Input
+            <ThaiDateInput
               id="completed_at"
-              type="date"
               min={hatching.started_at}
               max={todayStr()}
               value={completedAt}
-              onChange={(e) => setCompletedAt(e.target.value)}
+              onValueChange={setCompletedAt}
               required
             />
           </div>

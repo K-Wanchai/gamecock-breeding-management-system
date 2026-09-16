@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -148,7 +148,7 @@ export function AdminBookingsPage() {
           </SelectContent>
         </Select>
         <Input
-          type="date"
+          type="date" lang="th"
           value={bookingDate}
           onChange={(e) => {
             setBookingDate(e.target.value)

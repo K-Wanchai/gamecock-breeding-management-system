@@ -5,7 +5,9 @@ import type { PaginatedResponse } from '@/types/api'
 export async function listVaccinations(
   params: VaccinationListParams,
 ): Promise<PaginatedResponse<Vaccination>> {
-  const { data } = await api.get<PaginatedResponse<Vaccination>>('/vaccinations/', { params })
+  const { booking, ...rest } = params
+  const apiParams = { ...rest, ...(booking != null ? { 'chick__booking': booking } : {}) }
+  const { data } = await api.get<PaginatedResponse<Vaccination>>('/vaccinations/', { params: apiParams })
   return data
 }
 

@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -55,12 +56,11 @@ export function HatchingStartDialog({ open, onOpenChange, eggId }: HatchingStart
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="started_at">วันที่เริ่มฟัก</Label>
-            <Input
+            <ThaiDateInput
               id="started_at"
-              type="date"
               max={todayStr()}
               value={startedAt}
-              onChange={(e) => setStartedAt(e.target.value)}
+              onValueChange={setStartedAt}
               required
             />
           </div>

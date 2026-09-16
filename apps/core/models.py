@@ -9,7 +9,9 @@ class FarmSetting(models.Model):
     """
 
     farm_name = models.CharField(max_length=200, default='ฟาร์มไก่ชน')
+    farm_logo = models.ImageField(upload_to='farm/', blank=True, null=True)
     farm_address = models.TextField(blank=True, default='')
+    owner_name = models.CharField(max_length=200, blank=True, default='')
     bank_name = models.CharField(max_length=100, blank=True, default='')
     account_number = models.CharField(max_length=50, blank=True, default='')
     account_holder = models.CharField(max_length=200, blank=True, default='')

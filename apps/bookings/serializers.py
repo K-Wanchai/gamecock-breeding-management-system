@@ -41,6 +41,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'booking_date', 'booking_year', 'booking_month', 'queue_no',
             'price', 'deposit_amount', 'paid_amount', 'remaining_amount',
             'status', 'current_breeding_stage', 'latest_breeding_status', 'note',
+            'hen_brooding', 'brooding_started_at', 'clip_ready',
             'requested_at', 'approved_at', 'locked_at', 'cancelled_at', 'cancel_reason',
             'created_at', 'updated_at',
         )
@@ -69,6 +70,14 @@ class BookingCancelSerializer(serializers.Serializer):
 # ---------------------------------------------------------------------------
 # Timeline (STEP_TIMELINE) — customer-facing read-only endpoint
 # ---------------------------------------------------------------------------
+
+class _TimelineInseminationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    session_number = serializers.IntegerField()
+    record_date = serializers.DateField()
+    note = serializers.CharField()
+    created_at = serializers.DateTimeField()
+
 
 class _TimelineBreedingEventSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -117,9 +126,12 @@ class BookingTimelineSerializer(serializers.Serializer):
     breeder = _BreederSummarySerializer()
     booking_date = serializers.DateField()
     queue_no = serializers.IntegerField(allow_null=True)
+    hen_brooding = serializers.BooleanField()
+    brooding_started_at = serializers.DateTimeField(allow_null=True)
+    inseminations = _TimelineInseminationSerializer(many=True)
+    eggs = _TimelineEggSerializer(many=True)
     current_breeding_stage = serializers.SerializerMethodField()
     breeding_events = _TimelineBreedingEventSerializer(many=True)
-    eggs = _TimelineEggSerializer(many=True)
 
     def get_status_display(self, obj):
         return obj.get_status_display()

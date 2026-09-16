@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -78,13 +79,12 @@ export function HealthRecordFormDialog({ open, onOpenChange, chick }: HealthReco
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-2">
               <Label htmlFor="record_date">วันที่บันทึก</Label>
-              <Input
+              <ThaiDateInput
                 id="record_date"
-                type="date"
                 min={pickedChick?.birth_date}
                 max={todayStr()}
                 value={recordDate}
-                onChange={(e) => setRecordDate(e.target.value)}
+                onValueChange={setRecordDate}
                 required
               />
             </div>

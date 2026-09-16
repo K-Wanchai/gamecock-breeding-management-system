@@ -41,6 +41,7 @@ export interface Chick {
 export interface ChickListParams {
   page?: number
   hatching?: number
+  booking?: number
   status?: ChickStatus | ''
   gender?: ChickGender | ''
   search?: string

@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'email', 'phone', 'first_name', 'last_name',
+            'id', 'username', 'email', 'phone', 'address', 'first_name', 'last_name',
             'role', 'is_active', 'date_joined',
         )
         read_only_fields = ('id', 'username', 'role', 'is_active', 'date_joined')
@@ -27,7 +27,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'phone', 'first_name', 'last_name')
+        fields = ('email', 'phone', 'address', 'first_name', 'last_name')
 
     def validate_email(self, value):
         if value and User.objects.exclude(pk=self.instance.pk).filter(email__iexact=value).exists():

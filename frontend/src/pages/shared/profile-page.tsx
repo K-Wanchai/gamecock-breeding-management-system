@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/hooks/use-auth'
 import { useAuthStore } from '@/stores/auth-store'
@@ -18,6 +19,7 @@ function ProfileInfoCard() {
   const [form, setForm] = useState<ProfileUpdatePayload>({
     email: user?.email ?? '',
     phone: user?.phone ?? '',
+    address: user?.address ?? '',
     first_name: user?.first_name ?? '',
     last_name: user?.last_name ?? '',
   })
@@ -76,6 +78,16 @@ function ProfileInfoCard() {
           <div className="flex flex-col gap-2">
             <Label htmlFor="phone">เบอร์โทรศัพท์</Label>
             <Input id="phone" value={form.phone} onChange={update('phone')} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="address">ที่อยู่สำหรับจัดส่งไก่</Label>
+            <Textarea
+              id="address"
+              rows={3}
+              value={form.address}
+              onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
+              placeholder="เลขที่ บ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"
+            />
           </div>
           <Button type="submit" disabled={updateProfileMutation.isPending} className="w-fit">
             {updateProfileMutation.isPending ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}

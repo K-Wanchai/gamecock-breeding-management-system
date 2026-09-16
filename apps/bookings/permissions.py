@@ -18,7 +18,7 @@ class BookingActionPermission(BasePermission):
         user = request.user
         if not (user and user.is_authenticated):
             return False
-        if view.action == 'approve':
+        if view.action in ('approve', 'mark_brooding', 'complete'):
             return user.role == user.Role.ADMIN
         return True
 
@@ -26,6 +26,6 @@ class BookingActionPermission(BasePermission):
         user = request.user
         if user.role == user.Role.ADMIN:
             return True
-        if view.action == 'approve':
+        if view.action in ('approve', 'mark_brooding', 'complete'):
             return False
         return obj.get_owner_user_id() == user.id

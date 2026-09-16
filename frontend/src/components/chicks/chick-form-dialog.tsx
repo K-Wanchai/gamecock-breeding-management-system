@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -78,13 +79,12 @@ export function ChickFormDialog({ open, onOpenChange, hatching }: ChickFormDialo
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-2">
               <Label htmlFor="birth_date">วันเกิด</Label>
-              <Input
+              <ThaiDateInput
                 id="birth_date"
-                type="date"
                 min={hatching.started_at}
                 max={todayStr()}
                 value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
+                onValueChange={setBirthDate}
                 required
               />
             </div>

@@ -6,7 +6,7 @@ export function useHatchingsQuery(params: HatchingListParams) {
   return useQuery({
     queryKey: ['hatchings', params],
     queryFn: () => listHatchings(params),
-    enabled: Boolean(params.egg),
+    enabled: Boolean(params.egg) || Boolean(params.booking),
   })
 }
 

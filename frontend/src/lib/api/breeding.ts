@@ -6,6 +6,9 @@ import type {
   Egg,
   EggCreatePayload,
   EggListParams,
+  InseminationRecord,
+  InseminationRecordCreatePayload,
+  InseminationRecordListParams,
 } from '@/types/breeding'
 import type { PaginatedResponse } from '@/types/api'
 
@@ -29,5 +32,19 @@ export async function listEggs(params: EggListParams): Promise<PaginatedResponse
 
 export async function createEgg(payload: EggCreatePayload): Promise<Egg> {
   const { data } = await api.post<Egg>('/eggs/', payload)
+  return data
+}
+
+export async function listInseminationRecords(
+  params: InseminationRecordListParams,
+): Promise<PaginatedResponse<InseminationRecord>> {
+  const { data } = await api.get<PaginatedResponse<InseminationRecord>>('/insemination-records/', { params })
+  return data
+}
+
+export async function createInseminationRecord(
+  payload: InseminationRecordCreatePayload,
+): Promise<InseminationRecord> {
+  const { data } = await api.post<InseminationRecord>('/insemination-records/', payload)
   return data
 }

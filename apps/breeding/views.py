@@ -4,10 +4,11 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
 from apps.breeding import services
-from apps.breeding.models import BreedingEvent, Egg
+from apps.breeding.models import BreedingEvent, Egg, InseminationRecord
 from apps.breeding.permissions import BreedingWritePermission
 from apps.breeding.serializers import (
     BreedingEventCreateSerializer, BreedingEventSerializer, EggCreateSerializer, EggSerializer,
+    InseminationRecordCreateSerializer, InseminationRecordSerializer,
 )
 
 
@@ -48,6 +49,41 @@ class BreedingEventViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixin
             recorded_by=request.user,
         )
         return Response(BreedingEventSerializer(event).data, status=status.HTTP_201_CREATED)
+
+
+class InseminationRecordViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet,
+):
+    """/api/v1/insemination-records/ — ADMIN writes, CUSTOMER reads their own booking's records only."""
+
+    permission_classes = (BreedingWritePermission,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    filterset_fields = ('booking',)
+    ordering_fields = ('record_date', 'session_number', 'created_at')
+    ordering = ('record_date', 'session_number')
+
+    def get_queryset(self):
+        queryset = InseminationRecord.objects.select_related('booking', 'booking__customer', 'recorded_by').all()
+        user = self.request.user
+        if user.role == user.Role.ADMIN:
+            return queryset
+        return queryset.filter(booking__customer=user)
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return InseminationRecordCreateSerializer
+        return InseminationRecordSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        record = services.create_insemination_record(
+            booking_id=serializer.validated_data['booking'].id,
+            record_date=serializer.validated_data['record_date'],
+            note=serializer.validated_data.get('note', ''),
+            recorded_by=request.user,
+        )
+        return Response(InseminationRecordSerializer(record).data, status=status.HTTP_201_CREATED)
 
 
 class EggViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):

@@ -65,6 +65,10 @@ class Booking(TimeStampedModel):
     )
     note = models.TextField(blank=True, null=True)
 
+    hen_brooding = models.BooleanField(default=False)
+    brooding_started_at = models.DateTimeField(blank=True, null=True)
+    clip_ready = models.BooleanField(default=False)
+
     requested_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(blank=True, null=True)
     approved_by = models.ForeignKey(

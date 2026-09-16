@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+﻿import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 interface DateRangeFilterProps {
@@ -17,14 +17,14 @@ export function DateRangeFilter({
   return (
     <>
       <Input
-        type="date"
+        type="date" lang="th"
         value={dateFrom}
         onChange={(e) => onDateFromChange(e.target.value)}
         className="w-40"
         aria-label="วันที่เริ่มต้น"
       />
       <Input
-        type="date"
+        type="date" lang="th"
         value={dateTo}
         onChange={(e) => onDateToChange(e.target.value)}
         className="w-40"

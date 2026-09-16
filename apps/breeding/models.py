@@ -85,3 +85,33 @@ class Egg(TimeStampedModel):
 
     def __str__(self):
         return f'Egg batch#{self.id} booking#{self.booking_id} ({self.total_eggs} eggs)'
+
+
+class InseminationRecord(TimeStampedModel):
+    """บันทึกการฉีดน้ำเชื้อต่อการจอง — หลายครั้งได้ ไม่มี state machine.
+
+    ครั้งที่ 1, ครั้งที่ 2, ... บันทึกทุกครั้งที่ฉีดน้ำเชื้อจนกว่าแม่ไก่จะเข้าฟักเอง
+    (booking.hen_brooding = True). session_number คำนวณ server-side ห้าม client ส่งมา.
+    """
+
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='inseminations')
+    session_number = models.SmallIntegerField()
+    record_date = models.DateField()
+    note = models.TextField(blank=True)
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='inseminations_recorded',
+    )
+
+    class Meta:
+        ordering = ['record_date', 'session_number']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['booking', 'session_number'], name='uq_insemination_booking_session',
+            ),
+        ]
+
+    def get_owner_user_id(self):
+        return self.booking.customer_id
+
+    def __str__(self):
+        return f'Insemination#{self.session_number} booking#{self.booking_id} ({self.record_date})'

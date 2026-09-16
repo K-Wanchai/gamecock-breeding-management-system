@@ -113,6 +113,17 @@ def _notify(*, user, notif_type: str, message: str, booking=None, chick=None) ->
         logger.exception('Unexpected error while sending notification (notif_type=%s, user_id=%s)', notif_type, user.id)
 
 
+def _notify_inapp(*, user, notif_type: str, message: str, booking=None, chick=None) -> None:
+    """Create an in-app notification row only — no email, no LINE. Status is SENT immediately."""
+    try:
+        Notification.objects.create(
+            user=user, notif_type=notif_type, message=message, booking=booking, chick=chick,
+            channel='IN_APP', status=Notification.Status.SENT, sent_at=timezone.now(),
+        )
+    except Exception:
+        logger.exception('Unexpected error while creating in-app notification (notif_type=%s, user_id=%s)', notif_type, user.id)
+
+
 def notify_booking_approved(booking) -> None:
     _notify(
         user=booking.customer, notif_type='BOOKING_APPROVED', booking=booking,
@@ -183,3 +194,19 @@ def notify_hatching_completed(hatching) -> None:
         f'  รอด: {hatching.survival_count} ตัว'
     )
     _notify(user=booking.customer, notif_type='HATCHING_COMPLETED', booking=booking, message=message)
+
+
+def notify_clip_ready(booking) -> None:
+    from apps.core.models import FarmSetting  # local import: avoids circular at module load
+    farm = FarmSetting.load()
+    farm_name = farm.farm_name or 'ฟาร์มไก่ชน'
+    _notify_inapp(
+        user=booking.customer,
+        notif_type='CLIP_READY',
+        booking=booking,
+        message=(
+            f'รหัสการจอง {booking.booking_number}\n\n'
+            f'ขณะนี้ {farm_name} กำลังดำเนินการจัดทำเบอร์กิ๊ปและออกใบรับรองสายพันธุ์ให้กับลูกไก่ของท่าน\n\n'
+            f'ท่านจะได้รับลูกไก่พร้อมใบรับรองในเร็วๆ นี้'
+        ),
+    )

@@ -5,6 +5,7 @@ export interface User {
   username: string
   email: string
   phone: string
+  address: string | null
   first_name: string
   last_name: string
   role: Role
@@ -40,6 +41,7 @@ export interface RegisterPayload {
 export interface ProfileUpdatePayload {
   email: string
   phone: string
+  address: string
   first_name: string
   last_name: string
 }

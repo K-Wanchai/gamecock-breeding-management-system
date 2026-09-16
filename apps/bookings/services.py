@@ -124,6 +124,77 @@ def approve_booking(*, booking_id, admin) -> Booking:
 
 
 @transaction.atomic
+def mark_hen_brooding(*, booking_id, admin) -> Booking:
+    """
+    Admin sets hen_brooding=True on the booking, which stops any further
+    InseminationRecord or Egg creation (checked in breeding services).
+    Idempotent-safe: raises 409 if already set so the client knows.
+    """
+    try:
+        booking = Booking.objects.select_for_update().get(pk=booking_id)
+    except Booking.DoesNotExist:
+        raise AppError('NOT_FOUND', 'Booking not found.', http_status=404)
+
+    if booking.status not in (Booking.Status.APPROVED, Booking.Status.IN_PROGRESS):
+        raise AppError(
+            'BOOKING_NOT_ACTIVE',
+            'Booking must be APPROVED or IN_PROGRESS to mark hen as brooding.',
+            http_status=422,
+        )
+
+    if booking.hen_brooding:
+        raise AppError('HEN_ALREADY_BROODING', 'Hen has already been marked as brooding.', http_status=409)
+
+    booking.hen_brooding = True
+    booking.brooding_started_at = timezone.now()
+    booking.save(update_fields=['hen_brooding', 'brooding_started_at', 'updated_at'])
+    return booking
+
+
+@transaction.atomic
+def mark_clip_ready(*, booking_id, admin) -> Booking:
+    """Admin confirms health recording is done and the booking is ready for wing-clip + document generation."""
+    try:
+        booking = Booking.objects.select_for_update().get(pk=booking_id)
+    except Booking.DoesNotExist:
+        raise AppError('NOT_FOUND', 'Booking not found.', http_status=404)
+
+    if not booking.hen_brooding:
+        raise AppError(
+            'HEN_NOT_BROODING',
+            'Hen must be marked as brooding before marking clip ready.',
+            http_status=422,
+        )
+
+    if booking.clip_ready:
+        raise AppError('ALREADY_CLIP_READY', 'Booking is already marked as clip ready.', http_status=409)
+
+    booking.clip_ready = True
+    booking.save(update_fields=['clip_ready', 'updated_at'])
+
+    from apps.notifications import services as notification_services  # local import: avoids a module-load-time cycle
+    transaction.on_commit(lambda: notification_services.notify_clip_ready(booking))
+
+    return booking
+
+
+@transaction.atomic
+def complete_booking(*, booking_id, admin) -> Booking:
+    """Admin marks IN_PROGRESS booking as COMPLETED after hen_brooding + chick recording."""
+    try:
+        booking = Booking.objects.select_for_update().get(pk=booking_id)
+    except Booking.DoesNotExist:
+        raise AppError('NOT_FOUND', 'Booking not found.', http_status=404)
+
+    if booking.status != Booking.Status.IN_PROGRESS:
+        raise AppError('BOOKING_NOT_IN_PROGRESS', 'Booking must be IN_PROGRESS to complete.', http_status=422)
+
+    booking.status = Booking.Status.COMPLETED
+    booking.save(update_fields=['status', 'updated_at'])
+    return booking
+
+
+@transaction.atomic
 def cancel_booking(*, booking_id, actor, reason: str = '') -> Booking:
     from apps.payments.models import Payment  # local import: avoids a module-load-time cycle with payments.models
 

@@ -10,7 +10,9 @@ import type { PaginatedResponse } from '@/types/api'
 export async function listHatchings(
   params: HatchingListParams,
 ): Promise<PaginatedResponse<Hatching>> {
-  const { data } = await api.get<PaginatedResponse<Hatching>>('/hatchings/', { params })
+  const { booking, ...rest } = params
+  const apiParams = { ...rest, ...(booking != null ? { 'egg__booking': booking } : {}) }
+  const { data } = await api.get<PaginatedResponse<Hatching>>('/hatchings/', { params: apiParams })
   return data
 }
 

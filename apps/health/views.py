@@ -15,7 +15,7 @@ class HealthRecordViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins
 
     permission_classes = (HealthWritePermission,)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filterset_fields = ('chick',)
+    filterset_fields = ('chick', 'chick__booking')
     search_fields = ('chick__wing_clip_number',)
     ordering_fields = ('record_date', 'created_at')
     ordering = ('-record_date', '-id')

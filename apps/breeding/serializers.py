@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.bookings.models import Booking
 
-from apps.breeding.models import BreedingEvent, Egg
+from apps.breeding.models import BreedingEvent, Egg, InseminationRecord
 from apps.breeding.services import calculate_good_egg_rate
 
 
@@ -61,6 +61,31 @@ class EggSerializer(serializers.ModelSerializer):
 
     def get_good_egg_rate(self, obj):
         return str(calculate_good_egg_rate(obj))
+
+
+class InseminationRecordSerializer(serializers.ModelSerializer):
+    """Read representation returned for list/retrieve/create of insemination records."""
+
+    booking = _BookingSummarySerializer(read_only=True)
+    recorded_by = _RecordedBySummarySerializer(read_only=True)
+
+    class Meta:
+        model = InseminationRecord
+        fields = ('id', 'booking', 'session_number', 'record_date', 'note', 'recorded_by', 'created_at', 'updated_at')
+        read_only_fields = fields
+
+
+class InseminationRecordCreateSerializer(serializers.ModelSerializer):
+    """
+    POST /api/v1/insemination-records/ — ADMIN only. session_number is always
+    computed server-side (max + 1). Client supplies only booking, record_date, note.
+    """
+
+    booking = serializers.PrimaryKeyRelatedField(queryset=Booking.objects.all())
+
+    class Meta:
+        model = InseminationRecord
+        fields = ('booking', 'record_date', 'note')
 
 
 class EggCreateSerializer(serializers.ModelSerializer):

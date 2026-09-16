@@ -14,6 +14,7 @@ class User(AbstractUser):
 
     email = models.EmailField(blank=True, null=True, unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True, unique=True)
+    address = models.TextField(blank=True, null=True)
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.CUSTOMER, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 

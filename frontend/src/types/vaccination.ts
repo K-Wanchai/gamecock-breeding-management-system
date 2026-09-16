@@ -20,6 +20,7 @@ export interface Vaccination {
 export interface VaccinationListParams {
   page?: number
   chick?: number
+  booking?: number
   search?: string
 }
 

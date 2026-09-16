@@ -15,7 +15,7 @@ class ChickViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retrie
 
     permission_classes = (ChickWritePermission,)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filterset_fields = ('hatching', 'status', 'gender')
+    filterset_fields = ('hatching', 'booking', 'status', 'gender')
     search_fields = ('wing_clip_number', 'name')
     ordering_fields = ('birth_date', 'created_at')
     ordering = ('-created_at',)

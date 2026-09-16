@@ -14,7 +14,7 @@ from django.utils import timezone
 from apps.bookings.models import Booking
 from apps.core.exceptions import AppError
 
-from apps.breeding.models import BreedingEvent, Egg
+from apps.breeding.models import BreedingEvent, Egg, InseminationRecord
 
 # A breeding event may only be recorded once a booking has been admin-approved
 # and while it is still an active, non-cancelled process (Rules: "ห้าม Booking
@@ -121,6 +121,9 @@ def record_egg(
 
     _check_booking_open_for_breeding(booking)
 
+    if booking.hen_brooding:
+        raise AppError('HEN_BROODING', 'Cannot record eggs after hen has started brooding.', http_status=422)
+
     if total_eggs < 0 or good_eggs < 0 or bad_eggs < 0:
         raise AppError('INVALID_EGG_COUNT', 'Egg counts must not be negative.', http_status=422)
     if good_eggs + bad_eggs > total_eggs:
@@ -137,6 +140,44 @@ def record_egg(
     return Egg.objects.create(
         booking=booking, total_eggs=total_eggs, good_eggs=good_eggs, bad_eggs=bad_eggs,
         egg_date=egg_date, incubation_date=incubation_date, remark=remark or '', recorded_by=recorded_by,
+    )
+
+
+@transaction.atomic
+def create_insemination_record(
+    *, booking_id, record_date, note: str = '', recorded_by,
+) -> InseminationRecord:
+    """
+    Creates one insemination session record for the booking. session_number is
+    always server-computed (max existing + 1, starting at 1) so the client cannot
+    forge or reorder sessions. Blocked once booking.hen_brooding is True.
+    """
+    try:
+        booking = Booking.objects.select_for_update().get(pk=booking_id)
+    except Booking.DoesNotExist:
+        raise AppError('NOT_FOUND', 'Booking not found.', http_status=404)
+
+    _check_booking_open_for_breeding(booking)
+
+    if booking.hen_brooding:
+        raise AppError(
+            'HEN_BROODING', 'Cannot record insemination after hen has started brooding.', http_status=422,
+        )
+
+    if record_date > timezone.localdate():
+        raise AppError('RECORD_DATE_IN_FUTURE', 'record_date must not be in the future.', http_status=422)
+
+    last = InseminationRecord.objects.filter(booking=booking).order_by('-session_number').first()
+    session_number = (last.session_number + 1) if last else 1
+
+    # Move booking to IN_PROGRESS on first insemination (mirrors record_breeding_event behaviour).
+    if booking.status == Booking.Status.APPROVED:
+        booking.status = Booking.Status.IN_PROGRESS
+        booking.save(update_fields=['status', 'updated_at'])
+
+    return InseminationRecord.objects.create(
+        booking=booking, session_number=session_number,
+        record_date=record_date, note=note or '', recorded_by=recorded_by,
     )
 
 

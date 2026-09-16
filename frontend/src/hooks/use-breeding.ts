@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createBreedingEvent, createEgg, listBreedingEvents, listEggs } from '@/lib/api/breeding'
-import type { BreedingEventListParams, EggListParams } from '@/types/breeding'
+import {
+  createBreedingEvent, createEgg, createInseminationRecord,
+  listBreedingEvents, listEggs, listInseminationRecords,
+} from '@/lib/api/breeding'
+import type { BreedingEventListParams, EggListParams, InseminationRecordListParams } from '@/types/breeding'
 
 export function useBreedingEventsQuery(params: BreedingEventListParams) {
   return useQuery({
@@ -34,5 +37,24 @@ export function useCreateEgg() {
   return useMutation({
     mutationFn: createEgg,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['eggs'] }),
+  })
+}
+
+export function useInseminationRecordsQuery(params: InseminationRecordListParams) {
+  return useQuery({
+    queryKey: ['insemination-records', params],
+    queryFn: () => listInseminationRecords(params),
+    enabled: Boolean(params.booking),
+  })
+}
+
+export function useCreateInseminationRecord() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createInseminationRecord,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['insemination-records'] })
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+    },
   })
 }

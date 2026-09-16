@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from 'react'
+﻿import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -79,7 +80,7 @@ export function BookingFormDialog({ open, onOpenChange, breeder }: BookingFormDi
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="hen">แม่ไก่ที่จะใช้จอง</Label>
-            <Select value={henId} onValueChange={setHenId}>
+            <Select value={henId} onChange={(e) => setHenId(e.target.value)}>
               <SelectTrigger id="hen" className="w-full">
                 <SelectValue placeholder={hensLoading ? 'กำลังโหลด...' : 'เลือกแม่ไก่'} />
               </SelectTrigger>
@@ -100,12 +101,11 @@ export function BookingFormDialog({ open, onOpenChange, breeder }: BookingFormDi
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="booking_date">วันที่ต้องการจอง</Label>
-            <Input
+            <ThaiDateInput
               id="booking_date"
-              type="date"
               min={today()}
               value={bookingDate}
-              onChange={(e) => setBookingDate(e.target.value)}
+              onValueChange={setBookingDate}
               required
             />
           </div>

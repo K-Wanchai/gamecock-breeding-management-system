@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { BirdIcon, ChevronRight, RefreshCw, Search } from 'lucide-react'
 import { toast } from 'sonner'
@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -27,11 +27,14 @@ import {
 import { SectionLoading } from '@/components/shared/loading'
 import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
-import { useBookingsQuery } from '@/hooks/use-bookings'
-import { useCreateBreedingEvent } from '@/hooks/use-breeding'
+import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
+import { useBookingsQuery, useCompleteBooking } from '@/hooks/use-bookings'
+import { useCreateBreedingEvent, useEggsQuery } from '@/hooks/use-breeding'
+import { useStartHatching, useCompleteHatching } from '@/hooks/use-hatchings'
+import { useCreateChick } from '@/hooks/use-chicks'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { toastApiError } from '@/lib/toast'
-import { BookingStatusBadge } from '@/components/bookings/booking-status-badge'
+import { formatThaiDate } from '@/lib/utils'
 import {
   BREEDING_EVENT_LABEL,
   BREEDING_EVENT_STAGES,
@@ -165,8 +168,125 @@ function UpdateStageDialog({
   )
 }
 
-/* ─── Receive Hen Section ──────────────────────────────────────────────── */
+/* ─── Chick Hatching Dialog (shown when hen_brooding = true) ───────────── */
 
+function ChickHatchingDialog({
+  booking,
+  open,
+  onOpenChange,
+}: {
+  booking: Booking
+  open: boolean
+  onOpenChange: (v: boolean) => void
+}) {
+  const [hatchedCount, setHatchedCount] = useState('0')
+
+  const { data: eggs, isLoading: eggsLoading } = useEggsQuery({ booking: booking.id })
+  const startHatching = useStartHatching()
+  const completeHatching = useCompleteHatching()
+  const createChick = useCreateChick()
+  const completeBooking = useCompleteBooking()
+
+  // eggs ordered newest-first (-egg_date) — index 0 = latest survey
+  const latestEgg = eggs?.results[0]
+  const goodEggs = latestEgg?.good_eggs ?? 0
+  const isPending =
+    startHatching.isPending ||
+    completeHatching.isPending ||
+    createChick.isPending ||
+    completeBooking.isPending
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    if (!latestEgg) {
+      toast.error('ยังไม่มีข้อมูลไข่ กรุณาบันทึกข้อมูลไข่ก่อน')
+      return
+    }
+    const n = Number(hatchedCount)
+    if (n < 0 || n > goodEggs) {
+      toast.error(`จำนวนลูกไก่ต้องอยู่ระหว่าง 0–${goodEggs}`)
+      return
+    }
+    try {
+      const hatching = await startHatching.mutateAsync({
+        egg: latestEgg.id,
+        started_at: todayLocal(),
+      })
+      await completeHatching.mutateAsync({
+        id: hatching.id,
+        payload: {
+          completed_at: todayLocal(),
+          hatched_count: n,
+          failed_count: Math.max(0, goodEggs - n),
+          survival_count: n,
+        },
+      })
+      // สร้าง Chick record สำหรับทุกตัวที่ฟักออก
+      await Promise.all(
+        Array.from({ length: n }, () =>
+          createChick.mutateAsync({ hatching: hatching.id, birth_date: todayLocal() }),
+        ),
+      )
+      await completeBooking.mutateAsync(booking.id)
+      toast.success(`บันทึกผลการฟักและปิดการผสมพันธุ์ ${booking.booking_number} แล้ว`)
+      onOpenChange(false)
+    } catch (err) {
+      toastApiError(err)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>บันทึกผลการฟัก — {booking.booking_number}</DialogTitle>
+          <DialogDescription>
+            {booking.hen.name} × {booking.breeder.name}
+          </DialogDescription>
+        </DialogHeader>
+
+        {eggsLoading ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">กำลังโหลดข้อมูลไข่...</p>
+        ) : !latestEgg ? (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+            ยังไม่มีข้อมูลไข่ในระบบ กรุณาบันทึกข้อมูลไข่ก่อนกดแม่ไก่ฟักแล้ว
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-3">
+              <span className="text-sm text-muted-foreground">ไข่ดีที่สำรวจล่าสุด ({formatThaiDate(latestEgg.egg_date)})</span>
+              <span className="text-xl font-bold">{goodEggs} <span className="text-sm font-normal">ฟอง</span></span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="hatched_count">จำนวนลูกไก่ที่ฟักออก (ตัว)</Label>
+              <Input
+                id="hatched_count"
+                type="number"
+                min="0"
+                max={goodEggs}
+                value={hatchedCount}
+                onChange={(e) => setHatchedCount(e.target.value)}
+                required
+              />
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                ยกเลิก
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'กำลังบันทึก...' : 'บันทึกและปิดการผสม'}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/* ─── Receive Hen Section ──────────────────────────────────────────────── */
 
 const BOOKING_STATUS_LABEL: Record<string, string> = {
   PENDING: 'รอดำเนินการ',
@@ -184,10 +304,7 @@ function ReceiveHenSection() {
   const [searchTerm, setSearchTerm] = useState('')
   const createEvent = useCreateBreedingEvent()
 
-  // Search ALL statuses so we can give a helpful message when status is wrong
-  const { data, isFetching } = useBookingsQuery(
-    { search: searchTerm || undefined },
-  )
+  const { data, isFetching } = useBookingsQuery({ search: searchTerm || undefined })
 
   const exactMatch = searchTerm
     ? (data?.results.find(
@@ -248,7 +365,6 @@ function ReceiveHenSection() {
           </p>
         )}
 
-        {/* Found booking — check its status */}
         {!isFetching && exactMatch && (
           <div className="flex flex-col gap-2">
             <div className="rounded-lg border bg-white dark:bg-background p-3 text-sm">
@@ -282,7 +398,6 @@ function ReceiveHenSection() {
           </div>
         )}
 
-        {/* Not found */}
         {!isFetching && searchTerm && !exactMatch && data && (
           <p className="text-sm text-destructive">
             ไม่พบการจองหมายเลข &ldquo;{searchTerm}&rdquo;
@@ -301,6 +416,7 @@ function ActiveBreedingsTable() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [hatchingBooking, setHatchingBooking] = useState<Booking | null>(null)
   const debouncedSearch = useDebouncedValue(search)
 
   const { data, isLoading, isError, refetch } = useBookingsQuery({
@@ -364,7 +480,18 @@ function ActiveBreedingsTable() {
                         <BreedingStatusBadge status={booking.latest_breeding_status} />
                       </TableCell>
                       <TableCell className="text-right">
-                        {next ? (
+                        {booking.hen_brooding ? (
+                          // Hen is brooding — only action is to record hatched chicks and complete
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-amber-400 text-amber-700 hover:bg-amber-50 dark:text-amber-400"
+                            onClick={() => setHatchingBooking(booking)}
+                          >
+                            <BirdIcon className="mr-1 size-3.5" />
+                            แม่ไก่ฟักแล้ว
+                          </Button>
+                        ) : next ? (
                           <Button
                             size="sm"
                             variant="outline"
@@ -394,6 +521,13 @@ function ActiveBreedingsTable() {
           booking={selectedBooking}
           open={Boolean(selectedBooking)}
           onOpenChange={(v) => !v && setSelectedBooking(null)}
+        />
+      )}
+      {hatchingBooking && (
+        <ChickHatchingDialog
+          booking={hatchingBooking}
+          open={Boolean(hatchingBooking)}
+          onOpenChange={(v) => !v && setHatchingBooking(null)}
         />
       )}
     </div>

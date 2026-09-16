@@ -20,7 +20,7 @@ class HatchingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Ret
 
     permission_classes = (HatchingWritePermission,)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filterset_fields = ('egg', 'status')
+    filterset_fields = ('egg', 'egg__booking', 'status')
     search_fields = ('egg__booking__booking_number',)
     ordering_fields = ('started_at', 'created_at')
     ordering = ('-started_at', '-id')

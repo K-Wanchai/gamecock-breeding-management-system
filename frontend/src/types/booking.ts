@@ -48,6 +48,9 @@ export interface Booking {
   current_breeding_stage: string | null
   latest_breeding_status: string | null
   note: string | null
+  hen_brooding: boolean
+  brooding_started_at: string | null
+  clip_ready: boolean
   requested_at: string
   approved_at: string | null
   locked_at: string | null
@@ -69,9 +72,19 @@ export interface BookingListParams {
   status?: BookingStatus | ''
   search?: string
   booking_date?: string
+  hen_brooding?: boolean
+  clip_ready?: boolean
 }
 
 /* ─── Timeline (GET /api/v1/bookings/{id}/timeline/) ─── */
+
+export interface BookingTimelineInsemination {
+  id: number
+  session_number: number
+  record_date: string
+  note: string
+  created_at: string
+}
 
 export interface BookingTimelineBreedingEvent {
   id: number
@@ -103,7 +116,10 @@ export interface BookingTimeline {
   breeder: BookingBreederSummary
   booking_date: string
   queue_no: number | null
+  hen_brooding: boolean
+  brooding_started_at: string | null
+  inseminations: BookingTimelineInsemination[]
+  eggs: BookingTimelineEgg[]
   current_breeding_stage: { status: string; status_display: string; event_date: string } | null
   breeding_events: BookingTimelineBreedingEvent[]
-  eggs: BookingTimelineEgg[]
 }

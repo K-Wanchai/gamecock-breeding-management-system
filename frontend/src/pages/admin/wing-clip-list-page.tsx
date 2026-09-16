@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { HeartPulse } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -20,9 +20,7 @@ import { formatThaiDate } from '@/lib/utils'
 
 const PAGE_SIZE = 20
 
-/** Bookings that have completed the breeding cycle (hen brooded, chicks recorded).
- *  Admin can click into each booking to record health/vaccination for the chicks. */
-export function AdminChicksPage() {
+export function AdminWingClipListPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search)
@@ -31,37 +29,42 @@ export function AdminChicksPage() {
     page,
     search: debouncedSearch || undefined,
     status: 'COMPLETED',
-    hen_brooding: true,
-    clip_ready: false,
+    clip_ready: true,
   })
 
-  const careBookings = data?.results ?? []
+  const readyBookings = data?.results ?? []
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">บันทึกสุขภาพและการอนุบาลไก่</h1>
-
-      <div className="flex flex-wrap gap-3">
-        <Input
-          placeholder="ค้นหาเลขที่จอง, ลูกค้า, พ่อพันธุ์..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
-            setPage(1)
-          }}
-          className="max-w-xs"
-        />
+      <div>
+        <h1 className="text-2xl font-semibold flex items-center gap-2">
+          <FileText className="size-6" />
+          จัดทำเลขกิ๊ปและออกใบประวัติ
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          กำหนดเลขกิ๊ปปีกและออกใบรับรองสายพันธุ์ / เอกสารส่งมอบลูกไก่
+        </p>
       </div>
+
+      <Input
+        placeholder="ค้นหาเลขที่จอง, ลูกค้า, พ่อพันธุ์..."
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value)
+          setPage(1)
+        }}
+        className="max-w-xs"
+      />
 
       {isLoading ? (
         <SectionLoading />
       ) : isError ? (
         <QueryError onRetry={refetch} />
-      ) : careBookings.length === 0 ? (
+      ) : readyBookings.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center text-muted-foreground">
-          <HeartPulse className="mb-2 size-10 opacity-30" />
-          <p>ยังไม่มีข้อมูลการอนุบาลไก่</p>
-          <p className="mt-1 text-xs">ลูกไก่จะปรากฏที่นี่หลังจากบันทึกผลการฟักแล้ว</p>
+          <FileText className="mb-2 size-10 opacity-30" />
+          <p>ยังไม่มีรายการที่พร้อมออกเอกสาร</p>
+          <p className="mt-1 text-xs">จะแสดงที่นี่เมื่อกดพร้อมจัดทำจากหน้าบันทึกสุขภาพ</p>
         </div>
       ) : (
         <>
@@ -78,7 +81,7 @@ export function AdminChicksPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {careBookings.map((booking) => (
+                {readyBookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell className="font-medium">{booking.booking_number}</TableCell>
                     <TableCell>{booking.customer.username}</TableCell>
@@ -98,11 +101,11 @@ export function AdminChicksPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Link
-                        to={`/admin/care/${booking.id}`}
+                        to={`/admin/wing-clip/${booking.id}`}
                         className="inline-flex items-center gap-1 text-sm text-primary underline-offset-4 hover:underline"
                       >
-                        <HeartPulse className="size-3.5" />
-                        บันทึกสุขภาพ
+                        <FileText className="size-3.5" />
+                        จัดทำเอกสาร
                       </Link>
                     </TableCell>
                   </TableRow>

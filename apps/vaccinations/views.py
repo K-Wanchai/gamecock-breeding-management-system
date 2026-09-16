@@ -16,6 +16,7 @@ class VaccinePresetViewSet(viewsets.ModelViewSet):
 
     queryset = VaccinePreset.objects.all()
     serializer_class = VaccinePresetSerializer
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):
@@ -29,7 +30,7 @@ class VaccinationViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.
 
     permission_classes = (VaccinationWritePermission,)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filterset_fields = ('chick', 'vaccine_name')
+    filterset_fields = ('chick', 'vaccine_name', 'chick__booking')
     search_fields = ('chick__wing_clip_number', 'vaccine_name')
     ordering_fields = ('vaccination_date', 'created_at')
     ordering = ('-vaccination_date', '-id')

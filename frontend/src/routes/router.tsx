@@ -19,6 +19,8 @@ import { BreedingTimelineDetailPage } from '@/pages/customer/breeding-timeline-d
 import { PaymentsPage } from '@/pages/customer/payments-page'
 import { ChicksPage } from '@/pages/customer/chicks-page'
 import { ChickDetailPage } from '@/pages/customer/chick-detail-page'
+import { CustomerCareListPage } from '@/pages/customer/care-list-page'
+import { CustomerCareDetailPage } from '@/pages/customer/care-detail-page'
 import { DocumentsPage } from '@/pages/customer/documents-page'
 import { NotificationsPage } from '@/pages/customer/notifications-page'
 import { AdminBreedersPage } from '@/pages/admin/breeders-page'
@@ -30,6 +32,7 @@ import { AdminBreedingPage } from '@/pages/admin/breeding-page'
 import { AdminBreedingDetailPage } from '@/pages/admin/breeding-detail-page'
 import { AdminChicksPage } from '@/pages/admin/chicks-page'
 import { AdminChickDetailPage } from '@/pages/admin/chick-detail-page'
+import { AdminCareDetailPage } from '@/pages/admin/care-detail-page'
 import { AdminHealthPage } from '@/pages/admin/health-page'
 import { AdminVaccinationsPage } from '@/pages/admin/vaccinations-page'
 import { AdminDocumentsPage } from '@/pages/admin/documents-page'
@@ -44,6 +47,8 @@ import { HatchingReportPage } from '@/pages/admin/reports/hatching-report-page'
 import { ChickReportPage } from '@/pages/admin/reports/chick-report-page'
 import { AdminSearchPage } from '@/pages/admin/search-page'
 import { AdminSettingsPage } from '@/pages/admin/settings-page'
+import { AdminWingClipListPage } from '@/pages/admin/wing-clip-list-page'
+import { AdminWingClipDetailPage } from '@/pages/admin/wing-clip-detail-page'
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
@@ -72,6 +77,7 @@ export const router = createBrowserRouter([
               { path: 'breeding/:id', element: <AdminBreedingDetailPage /> },
               { path: 'chicks', element: <AdminChicksPage /> },
               { path: 'chicks/:id', element: <AdminChickDetailPage /> },
+              { path: 'care/:id', element: <AdminCareDetailPage /> },
               { path: 'health', element: <AdminHealthPage /> },
               { path: 'vaccinations', element: <AdminVaccinationsPage /> },
               { path: 'documents', element: <AdminDocumentsPage /> },
@@ -86,6 +92,8 @@ export const router = createBrowserRouter([
               { path: 'reports/chicks', element: <ChickReportPage /> },
               { path: 'search', element: <AdminSearchPage /> },
               { path: 'settings', element: <AdminSettingsPage /> },
+              { path: 'wing-clip', element: <AdminWingClipListPage /> },
+              { path: 'wing-clip/:id', element: <AdminWingClipDetailPage /> },
             ],
           },
         ],
@@ -108,6 +116,8 @@ export const router = createBrowserRouter([
               { path: 'payments', element: <PaymentsPage /> },
               { path: 'chicks', element: <ChicksPage /> },
               { path: 'chicks/:id', element: <ChickDetailPage /> },
+              { path: 'care', element: <CustomerCareListPage /> },
+              { path: 'care/:id', element: <CustomerCareDetailPage /> },
               { path: 'documents', element: <DocumentsPage /> },
               { path: 'notifications', element: <NotificationsPage /> },
             ],
