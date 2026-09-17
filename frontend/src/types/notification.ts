@@ -6,6 +6,22 @@ export const NOTIFICATION_STATUS_LABEL: Record<NotificationStatus, string> = {
   FAILED: 'ส่งไม่สำเร็จ',
 }
 
+export const NOTIF_TYPE_LABEL: Record<string, string> = {
+  BOOKING_APPROVED: 'อนุมัติการจอง',
+  BOOKING_CANCELLED: 'ยกเลิกการจอง',
+  PAYMENT_APPROVED: 'ยืนยันการชำระเงิน (พร้อมที่อยู่ฟาร์ม)',
+  PAYMENT_APPROVED_FOLLOWUP: 'ยืนยันการชำระเงิน',
+  PAYMENT_REJECTED: 'ปฏิเสธการชำระเงิน',
+  HEN_RECEIVED: 'รับแม่ไก่เข้าฟาร์ม',
+  BREEDING_UPDATED: 'อัพเดตขั้นตอนการผสมพันธุ์',
+  INSEMINATION_RECORDED: 'บันทึกการฉีดน้ำเชื้อ',
+  EGG_RECORDED: 'บันทึกข้อมูลไข่',
+  HATCHING_STARTED: 'เริ่มการฟักไข่',
+  HATCHING_COMPLETED: 'ผลการฟักไข่',
+  HEN_BROODING: 'แม่ไก่เริ่มกกไข่',
+  CLIP_READY: 'เตรียมออกใบรับรองสายพันธุ์',
+}
+
 interface NotificationBookingSummary {
   id: number
   booking_number: string

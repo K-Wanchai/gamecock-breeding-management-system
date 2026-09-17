@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { formatThaiDateTime } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -203,7 +204,7 @@ export function AdminPaymentsPage() {
                     <TableCell>{payment.booking.booking_number}</TableCell>
                     <TableCell>{PAYMENT_TYPE_LABEL[payment.payment_type]}</TableCell>
                     <TableCell>{payment.amount} บาท</TableCell>
-                    <TableCell>{new Date(payment.paid_at).toLocaleString('th-TH')}</TableCell>
+                    <TableCell>{formatThaiDateTime(payment.paid_at)}</TableCell>
                     <TableCell>
                       {payment.slip ? (
                         <Button variant="link" size="sm" onClick={() => setSlipPayment(payment)}>
@@ -251,7 +252,7 @@ export function AdminPaymentsPage() {
           <DialogHeader>
             <DialogTitle>สลิปการชำระเงิน {slipPayment?.payment_number}</DialogTitle>
             <DialogDescription>
-              {slipPayment && `${slipPayment.amount} บาท — ${new Date(slipPayment.paid_at).toLocaleString('th-TH')}`}
+              {slipPayment && `${slipPayment.amount} บาท — ${formatThaiDateTime(slipPayment.paid_at)}`}
             </DialogDescription>
           </DialogHeader>
           {slipPayment?.slip && (

@@ -1,9 +1,11 @@
 ﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
+import { formatThaiDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -117,7 +119,7 @@ export function AdminBookingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">การซื้อล็อคฝากผสม</h1>
+      <h1 className="text-2xl font-semibold">การจองล็อคฝากผสม</h1>
 
       <div className="flex flex-wrap gap-3">
         <Input
@@ -147,15 +149,11 @@ export function AdminBookingsPage() {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          type="date" lang="th"
+        <ThaiDateInput
           value={bookingDate}
-          onChange={(e) => {
-            setBookingDate(e.target.value)
-            setPage(1)
-          }}
+          onValueChange={(v) => { setBookingDate(v); setPage(1) }}
+          placeholder="ค้นหาตามวันที่จอง"
           className="w-44"
-          aria-label="ค้นหาตามวันที่จอง"
         />
         {bookingDate && (
           <Button variant="ghost" size="sm" onClick={() => setBookingDate('')}>
@@ -201,7 +199,7 @@ export function AdminBookingsPage() {
                     <TableCell>{booking.customer.username}</TableCell>
                     <TableCell>{booking.hen.name}</TableCell>
                     <TableCell>{booking.breeder.name}</TableCell>
-                    <TableCell>{booking.booking_date}</TableCell>
+                    <TableCell>{formatThaiDate(booking.booking_date)}</TableCell>
                     <TableCell>{booking.price} บาท</TableCell>
                     <TableCell>{booking.remaining_amount} บาท</TableCell>
                     <TableCell>

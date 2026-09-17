@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -183,7 +184,7 @@ export function ChickReportPage() {
                     <TableCell>{row.customer}</TableCell>
                     <TableCell>{row.breeder}</TableCell>
                     <TableCell>{CHICK_GENDER_LABEL[row.gender]}</TableCell>
-                    <TableCell>{row.birth_date}</TableCell>
+                    <TableCell>{formatThaiDate(row.birth_date)}</TableCell>
                     <TableCell>
                       <Badge variant={STATUS_VARIANT[row.status]}>{CHICK_STATUS_LABEL[row.status]}</Badge>
                     </TableCell>

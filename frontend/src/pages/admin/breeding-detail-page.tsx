@@ -161,8 +161,8 @@ function AdminEggCard({ egg, bookingOpen }: { egg: Egg; bookingOpen: boolean }) 
             <span>อัตราการฟัก {hatching.hatching_rate}%</span>
           </div>
           <p className="text-muted-foreground">
-            เริ่มฟัก {hatching.started_at}
-            {hatching.completed_at && ` — เสร็จสิ้น ${hatching.completed_at}`}
+            เริ่มฟัก {formatThaiDate(hatching.started_at)}
+            {hatching.completed_at && ` — เสร็จสิ้น ${formatThaiDate(hatching.completed_at)}`}
           </p>
           <p>ฟักออก {hatching.hatched_count} / ไม่สำเร็จ {hatching.failed_count} / รอดชีวิต {hatching.survival_count}</p>
           {hatching.status === 'INCUBATING' && (

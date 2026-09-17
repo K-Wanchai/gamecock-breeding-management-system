@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -74,7 +75,7 @@ export function AdminVaccinationsPage() {
                 <TableBody>
                   {data.results.map((vaccination) => (
                     <TableRow key={vaccination.id}>
-                      <TableCell className="font-medium">{vaccination.vaccination_date}</TableCell>
+                      <TableCell className="font-medium">{formatThaiDate(vaccination.vaccination_date)}</TableCell>
                       <TableCell>
                         <Link
                           to={`/admin/chicks/${vaccination.chick.id}`}

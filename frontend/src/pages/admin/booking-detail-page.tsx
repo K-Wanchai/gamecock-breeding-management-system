@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SectionLoading } from '@/components/shared/loading'
 import { QueryError } from '@/components/shared/query-error'
@@ -56,7 +57,7 @@ export function AdminBookingDetailPage() {
             label="พ่อพันธุ์"
             value={`${booking.breeder.name}${booking.breeder.breed ? ` (${booking.breeder.breed})` : ''}`}
           />
-          <InfoRow label="วันที่จอง" value={booking.booking_date} />
+          <InfoRow label="วันที่จอง" value={formatThaiDate(booking.booking_date)} />
           {booking.queue_no !== null && <InfoRow label="หมายเลขคิว" value={booking.queue_no} />}
         </CardContent>
       </Card>

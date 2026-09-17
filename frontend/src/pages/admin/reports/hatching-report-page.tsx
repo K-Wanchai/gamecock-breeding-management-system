@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -161,8 +162,8 @@ export function HatchingReportPage() {
                     <TableCell>{row.survival_count}</TableCell>
                     <TableCell>{row.hatching_rate}%</TableCell>
                     <TableCell>{HATCHING_STATUS_LABEL[row.status]}</TableCell>
-                    <TableCell>{row.started_at}</TableCell>
-                    <TableCell>{row.completed_at || '-'}</TableCell>
+                    <TableCell>{formatThaiDate(row.started_at)}</TableCell>
+                    <TableCell>{formatThaiDate(row.completed_at)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

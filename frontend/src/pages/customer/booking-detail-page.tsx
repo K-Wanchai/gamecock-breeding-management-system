@@ -37,6 +37,7 @@ import { useBookingQuery, useCancelBooking } from '@/hooks/use-bookings'
 import { usePaymentsQuery, useResubmitPayment } from '@/hooks/use-payments'
 import { useFarmSettingQuery } from '@/hooks/use-settings'
 import { toastApiError } from '@/lib/toast'
+import { formatThaiDate, formatThaiDateTime } from '@/lib/utils'
 import { validateImageFile } from '@/lib/validate-image-file'
 import { CUSTOMER_CANCELLABLE_STATUSES, type BookingStatus } from '@/types/booking'
 import type { FarmSetting } from '@/lib/api/settings'
@@ -335,7 +336,7 @@ function PaymentHistoryCard({ bookingId }: { bookingId: number }) {
               <div>
                 <p className="text-sm font-semibold">{p.payment_number}</p>
                 <p className="text-xs text-muted-foreground">
-                  {PAYMENT_TYPE_LABEL[p.payment_type]} · {new Date(p.paid_at).toLocaleString('th-TH')}
+                  {PAYMENT_TYPE_LABEL[p.payment_type]} · {formatThaiDateTime(p.paid_at)}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -425,7 +426,7 @@ export function BookingDetailPage() {
         <CardContent>
           <InfoRow label="แม่ไก่" value={`${booking.hen.name}${booking.hen.breed ? ` (${booking.hen.breed})` : ''}`} />
           <InfoRow label="พ่อพันธุ์" value={`${booking.breeder.name}${booking.breeder.breed ? ` (${booking.breeder.breed})` : ''}`} />
-          <InfoRow label="วันที่จอง" value={booking.booking_date} />
+          <InfoRow label="วันที่จอง" value={formatThaiDate(booking.booking_date)} />
           <InfoRow label="ราคา" value={`฿${Number(booking.price).toLocaleString('th-TH')}`} />
           {booking.note && <InfoRow label="หมายเหตุ" value={booking.note} />}
         </CardContent>

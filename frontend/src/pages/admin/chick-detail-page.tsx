@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Plus } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -72,7 +73,7 @@ export function AdminChickDetailPage() {
         <CardContent className="divide-y">
           <InfoRow label="ชื่อ" value={chick.name || '-'} />
           <InfoRow label="เพศ" value={CHICK_GENDER_LABEL[chick.gender]} />
-          <InfoRow label="วันเกิด" value={chick.birth_date} />
+          <InfoRow label="วันเกิด" value={formatThaiDate(chick.birth_date)} />
           {chick.color_note && <InfoRow label="ลักษณะสี" value={chick.color_note} />}
           <InfoRow
             label="การจอง"
@@ -101,23 +102,9 @@ export function AdminChickDetailPage() {
             <p className="py-2 text-sm text-muted-foreground">ยังไม่มีบันทึกสุขภาพ</p>
           ) : (
             healthRecords.results.map((record) => (
-              <div key={record.id} className="flex flex-col gap-1 py-2 text-sm">
-                <div className="flex justify-between font-medium">
-                  <span>{record.record_date}</span>
-                  {record.weight && <span>{record.weight} กรัม</span>}
-                </div>
-                {record.symptom && (
-                  <p className="text-muted-foreground">อาการที่พบ: {record.symptom}</p>
-                )}
-                {record.observation && (
-                  <p className="text-muted-foreground">อาการ: {record.observation}</p>
-                )}
-                {record.medicine && (
-                  <p className="text-muted-foreground">ยาที่ใช้: {record.medicine}</p>
-                )}
-                {record.remark && (
-                  <p className="text-muted-foreground">หมายเหตุ: {record.remark}</p>
-                )}
+              <div key={record.id} className="flex justify-between py-2 text-sm font-medium">
+                <span>{formatThaiDate(record.record_date)}</span>
+                <span className="text-right">{record.observation || '-'}</span>
               </div>
             ))
           )}
@@ -142,7 +129,7 @@ export function AdminChickDetailPage() {
                   <span>
                     {vaccination.vaccine_name} (เข็มที่ {vaccination.dose_number})
                   </span>
-                  <span>{vaccination.vaccination_date}</span>
+                  <span>{formatThaiDate(vaccination.vaccination_date)}</span>
                 </div>
                 {vaccination.age_days !== null && (
                   <p className="text-muted-foreground">อายุตอนฉีด: {vaccination.age_days} วัน</p>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { formatThaiDateTime } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -22,7 +23,7 @@ import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { useNotificationsQuery, useRetryNotification } from '@/hooks/use-notifications'
 import { toastApiError } from '@/lib/toast'
-import { NOTIFICATION_STATUS_LABEL } from '@/types/notification'
+import { NOTIFICATION_STATUS_LABEL, NOTIF_TYPE_LABEL } from '@/types/notification'
 import type { NotificationStatus } from '@/types/notification'
 
 const PAGE_SIZE = 20
@@ -115,10 +116,10 @@ export function AdminNotificationsPage() {
                 {data.results.map((notification) => (
                   <TableRow key={notification.id}>
                     <TableCell className="whitespace-nowrap">
-                      {new Date(notification.created_at).toLocaleString('th-TH')}
+                      {formatThaiDateTime(notification.created_at)}
                     </TableCell>
                     <TableCell>{notification.user.username}</TableCell>
-                    <TableCell>{notification.notif_type}</TableCell>
+                    <TableCell>{NOTIF_TYPE_LABEL[notification.notif_type] ?? notification.notif_type}</TableCell>
                     <TableCell className="max-w-xs truncate" title={notification.message}>
                       {notification.message}
                     </TableCell>

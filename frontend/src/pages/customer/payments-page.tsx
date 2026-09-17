@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
+import { formatThaiDateTime } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -114,7 +115,7 @@ export function PaymentsPage() {
                     </TableCell>
                     <TableCell>{PAYMENT_TYPE_LABEL[payment.payment_type]}</TableCell>
                     <TableCell>{payment.amount} บาท</TableCell>
-                    <TableCell>{new Date(payment.paid_at).toLocaleString('th-TH')}</TableCell>
+                    <TableCell>{formatThaiDateTime(payment.paid_at)}</TableCell>
                     <TableCell>
                       <PaymentStatusBadge status={payment.status} />
                     </TableCell>

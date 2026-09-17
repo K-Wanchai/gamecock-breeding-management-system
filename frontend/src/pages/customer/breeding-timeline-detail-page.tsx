@@ -84,7 +84,7 @@ function EggCard({ egg }: { egg: BookingTimelineEgg }) {
       </div>
 
       {egg.incubation_date && (
-        <p className="text-xs text-muted-foreground">วันที่เข้าตู้ฟัก: {egg.incubation_date}</p>
+        <p className="text-xs text-muted-foreground">วันที่เข้าตู้ฟัก: {formatThaiDate(egg.incubation_date)}</p>
       )}
       {egg.remark && (
         <p className="text-xs text-muted-foreground">หมายเหตุ: {egg.remark}</p>

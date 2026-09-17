@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -149,7 +150,7 @@ export function BreedingReportPage() {
                     <TableCell>{row.customer}</TableCell>
                     <TableCell>{row.breeder}</TableCell>
                     <TableCell>{BREEDING_EVENT_LABEL[row.status]}</TableCell>
-                    <TableCell>{row.event_date}</TableCell>
+                    <TableCell>{formatThaiDate(row.event_date)}</TableCell>
                     <TableCell>{row.description || '-'}</TableCell>
                   </TableRow>
                 ))}

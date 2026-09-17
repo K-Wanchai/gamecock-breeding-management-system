@@ -11,12 +11,12 @@ const THAI_MONTHS = [
   'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
 ]
 
-/** "2026-09-16" → "16/กันยายน/2569" */
+/** "2026-09-16" → "16 กันยายน 2569" */
 function toThaiLabel(value: string): string {
   if (!value) return ''
   const d = new Date(`${value}T00:00:00`)
   if (isNaN(d.getTime())) return ''
-  return `${d.getDate()}/${THAI_MONTHS[d.getMonth()]}/${d.getFullYear() + 543}`
+  return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear() + 543}`
 }
 
 /** "2026-09-16" → Date object (local midnight) */

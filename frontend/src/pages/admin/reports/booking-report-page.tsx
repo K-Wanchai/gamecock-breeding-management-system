@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -154,7 +155,7 @@ export function BookingReportPage() {
                     <TableCell>{row.customer}</TableCell>
                     <TableCell>{row.hen}</TableCell>
                     <TableCell>{row.breeder}</TableCell>
-                    <TableCell>{row.booking_date}</TableCell>
+                    <TableCell>{formatThaiDate(row.booking_date)}</TableCell>
                     <TableCell>{row.price} บาท</TableCell>
                     <TableCell>{row.paid_amount} บาท</TableCell>
                     <TableCell>{row.remaining_amount} บาท</TableCell>

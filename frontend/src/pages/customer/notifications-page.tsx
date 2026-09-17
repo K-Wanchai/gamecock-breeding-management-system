@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell } from 'lucide-react'
+import { formatThaiDateTime } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { SectionLoading } from '@/components/shared/loading'
 import { QueryError } from '@/components/shared/query-error'
 import { Pagination } from '@/components/shared/pagination'
 import { useNotificationsQuery } from '@/hooks/use-notifications'
-import { NOTIFICATION_STATUS_LABEL } from '@/types/notification'
+import { NOTIFICATION_STATUS_LABEL, NOTIF_TYPE_LABEL } from '@/types/notification'
 import type { NotificationStatus } from '@/types/notification'
 
 const PAGE_SIZE = 20
@@ -42,14 +43,14 @@ export function NotificationsPage() {
               <Card key={notification.id}>
                 <CardContent className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium">{notification.notif_type}</span>
+                    <span className="font-medium">{NOTIF_TYPE_LABEL[notification.notif_type] ?? notification.notif_type}</span>
                     <Badge variant={STATUS_VARIANT[notification.status]}>
                       {NOTIFICATION_STATUS_LABEL[notification.status]}
                     </Badge>
                   </div>
                   <p className="text-sm">{notification.message}</p>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{new Date(notification.created_at).toLocaleString('th-TH')}</span>
+                    <span>{formatThaiDateTime(notification.created_at)}</span>
                     {notification.booking && (
                       <Link
                         to={`/app/bookings/${notification.booking.id}`}

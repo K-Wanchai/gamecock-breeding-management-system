@@ -302,22 +302,27 @@ def _health_vaccination_page(booking, chicks, farm_name_str: str, font: str, s: 
         HealthRecord.objects
         .filter(chick__in=chicks)
         .order_by('record_date', 'id')
-        .values('record_date', 'weight', 'observation', 'medicine', 'remark')
+        .values('record_date', 'observation', 'medicine', 'remark')
     )
-    health_rows = list(health_qs)
+    # Deduplicate by (record_date, observation) — health records are recorded per flock, not per chick
+    seen_health = set()
+    health_rows = []
+    for r in health_qs:
+        key = (r['record_date'], r['observation'])
+        if key not in seen_health:
+            seen_health.add(key)
+            health_rows.append(r)
 
     if health_rows:
-        col_w = [2.5 * cm, 2 * cm, (content_w - 8.5 * cm), 3 * cm]
+        col_w = [2.5 * cm, (content_w - 5.5 * cm), 3 * cm]
         header = [
             Paragraph('<b>วันที่</b>', ParagraphStyle('th', fontName=font, fontSize=10, leading=14, textColor=colors.white)),
-            Paragraph('<b>น้ำหนัก (g)</b>', ParagraphStyle('th', fontName=font, fontSize=10, leading=14, textColor=colors.white)),
             Paragraph('<b>บันทึก</b>', ParagraphStyle('th', fontName=font, fontSize=10, leading=14, textColor=colors.white)),
             Paragraph('<b>ยา / หมายเหตุ</b>', ParagraphStyle('th', fontName=font, fontSize=10, leading=14, textColor=colors.white)),
         ]
         data = [header]
         for r in health_rows:
             date_str = r['record_date'].strftime('%d/%m/%Y') if r['record_date'] else '-'
-            weight_str = str(r['weight']) if r['weight'] is not None else '-'
             obs_str = r['observation'] or '-'
             med_str = r['medicine'] or ''
             remark_str = r['remark'] or ''
@@ -325,7 +330,6 @@ def _health_vaccination_page(booking, chicks, farm_name_str: str, font: str, s: 
             row_style = ParagraphStyle('td', fontName=font, fontSize=9, leading=13)
             data.append([
                 Paragraph(date_str, row_style),
-                Paragraph(weight_str, row_style),
                 Paragraph(obs_str, row_style),
                 Paragraph(note_str, row_style),
             ])

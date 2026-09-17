@@ -27,9 +27,12 @@ def start_hatching(*, egg_id, started_at, remark: str = '', recorded_by) -> Hatc
     if started_at > timezone.localdate():
         raise AppError('STARTED_AT_IN_FUTURE', 'started_at must not be in the future.', http_status=422)
 
-    return Hatching.objects.create(
+    hatching = Hatching.objects.create(
         egg=egg, started_at=started_at, total_eggs=egg.total_eggs, remark=remark or '', recorded_by=recorded_by,
     )
+    from apps.notifications import services as notification_services
+    transaction.on_commit(lambda: notification_services.notify_hatching_started(hatching))
+    return hatching
 
 
 @transaction.atomic

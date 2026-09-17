@@ -131,7 +131,7 @@ def mark_hen_brooding(*, booking_id, admin) -> Booking:
     Idempotent-safe: raises 409 if already set so the client knows.
     """
     try:
-        booking = Booking.objects.select_for_update().get(pk=booking_id)
+        booking = Booking.objects.select_for_update().select_related('hen', 'customer').get(pk=booking_id)
     except Booking.DoesNotExist:
         raise AppError('NOT_FOUND', 'Booking not found.', http_status=404)
 
@@ -148,6 +148,9 @@ def mark_hen_brooding(*, booking_id, admin) -> Booking:
     booking.hen_brooding = True
     booking.brooding_started_at = timezone.now()
     booking.save(update_fields=['hen_brooding', 'brooding_started_at', 'updated_at'])
+
+    from apps.notifications import services as notification_services
+    transaction.on_commit(lambda: notification_services.notify_hen_brooding(booking))
     return booking
 
 

@@ -1,4 +1,5 @@
 import { CheckCircle2 } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import { BREEDING_EVENT_LABEL } from '@/types/breeding'
 import type { BreedingEvent } from '@/types/breeding'
 
@@ -15,7 +16,7 @@ export function BreedingTimeline({ events }: { events: BreedingEvent[] }) {
           <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
           <div className="flex flex-col">
             <span className="font-medium">{BREEDING_EVENT_LABEL[event.status]}</span>
-            <span className="text-xs text-muted-foreground">{event.event_date}</span>
+            <span className="text-xs text-muted-foreground">{formatThaiDate(event.event_date)}</span>
             {event.description && (
               <span className="text-sm text-muted-foreground">{event.description}</span>
             )}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Download } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -80,9 +81,7 @@ export function DocumentsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {document.generated_at
-                        ? new Date(document.generated_at).toLocaleDateString('th-TH')
-                        : '-'}
+                      {formatThaiDate(document.generated_at)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

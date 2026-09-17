@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { formatThaiDate } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -119,7 +120,7 @@ export function ChicksPage() {
                     </TableCell>
                     <TableCell>{chick.name || '-'}</TableCell>
                     <TableCell>{CHICK_GENDER_LABEL[chick.gender]}</TableCell>
-                    <TableCell>{chick.birth_date}</TableCell>
+                    <TableCell>{formatThaiDate(chick.birth_date)}</TableCell>
                     <TableCell>{chick.booking.booking_number}</TableCell>
                     <TableCell>
                       <Badge variant={STATUS_VARIANT[chick.status]}>

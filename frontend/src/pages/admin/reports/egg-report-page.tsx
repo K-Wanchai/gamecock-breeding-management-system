@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -118,7 +119,7 @@ export function EggReportPage() {
                     <TableCell>{row.good_eggs}</TableCell>
                     <TableCell>{row.bad_eggs}</TableCell>
                     <TableCell>{row.good_egg_rate}%</TableCell>
-                    <TableCell>{row.egg_date}</TableCell>
+                    <TableCell>{formatThaiDate(row.egg_date)}</TableCell>
                     <TableCell>{row.incubation_date || '-'}</TableCell>
                   </TableRow>
                 ))}

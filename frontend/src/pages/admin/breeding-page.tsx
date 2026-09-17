@@ -4,6 +4,7 @@ import { BirdIcon, ChevronRight, RefreshCw, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
@@ -134,13 +135,11 @@ function UpdateStageDialog({
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="event_date">วันที่</Label>
-            <Input
+            <ThaiDateInput
               id="event_date"
-              type="date"
               max={todayLocal()}
               value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              required
+              onValueChange={setEventDate}
             />
           </div>
           <div className="flex flex-col gap-2">

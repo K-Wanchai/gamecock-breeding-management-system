@@ -71,10 +71,10 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    groupLabel: 'Process 3 · ซื้อล็อคฝากผสม',
-    description: 'จัดการคำสั่งซื้อและการชำระเงินเต็มจำนวน',
+    groupLabel: 'Process 3 · จองล็อคฝากผสม',
+    description: 'จัดการคำสั่งจองและการชำระเงินเต็มจำนวน',
     items: [
-      { label: 'การซื้อล็อคฝากผสม', path: '/admin/bookings', icon: ShoppingCart },
+      { label: 'การจองล็อคฝากผสม', path: '/admin/bookings', icon: ShoppingCart },
       { label: 'การชำระเงิน', path: '/admin/payments', icon: Wallet },
     ],
   },

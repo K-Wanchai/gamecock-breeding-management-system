@@ -1,5 +1,5 @@
-﻿import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 
 interface DateRangeFilterProps {
   dateFrom: string
@@ -16,19 +16,19 @@ export function DateRangeFilter({
 }: DateRangeFilterProps) {
   return (
     <>
-      <Input
-        type="date" lang="th"
+      <ThaiDateInput
         value={dateFrom}
-        onChange={(e) => onDateFromChange(e.target.value)}
-        className="w-40"
-        aria-label="วันที่เริ่มต้น"
+        onValueChange={onDateFromChange}
+        placeholder="วันที่เริ่มต้น"
+        max={dateTo || undefined}
+        className="w-44"
       />
-      <Input
-        type="date" lang="th"
+      <ThaiDateInput
         value={dateTo}
-        onChange={(e) => onDateToChange(e.target.value)}
-        className="w-40"
-        aria-label="วันที่สิ้นสุด"
+        onValueChange={onDateToChange}
+        placeholder="วันที่สิ้นสุด"
+        min={dateFrom || undefined}
+        className="w-44"
       />
       {(dateFrom || dateTo) && (
         <Button

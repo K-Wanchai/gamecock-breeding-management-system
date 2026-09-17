@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -101,7 +102,7 @@ export function AdminSearchPage() {
                     <TableCell>{row.customer}</TableCell>
                     <TableCell>{row.hen}</TableCell>
                     <TableCell>{row.breeder}</TableCell>
-                    <TableCell>{row.booking_date}</TableCell>
+                    <TableCell>{formatThaiDate(row.booking_date)}</TableCell>
                     <TableCell>{row.wing_clip_numbers.join(', ') || '-'}</TableCell>
                     <TableCell>
                       <BookingStatusBadge status={row.status} />

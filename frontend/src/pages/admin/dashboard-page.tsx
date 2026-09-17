@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { CalendarClock, Wallet, TrendingUp, Bird, Dna, Egg, Feather } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -116,7 +117,7 @@ export function AdminDashboardPage() {
                         <TableCell>{booking.customer}</TableCell>
                         <TableCell>{booking.hen}</TableCell>
                         <TableCell>{booking.breeder}</TableCell>
-                        <TableCell>{booking.booking_date}</TableCell>
+                        <TableCell>{formatThaiDate(booking.booking_date)}</TableCell>
                         <TableCell>
                           <BookingStatusBadge status={booking.status} />
                         </TableCell>

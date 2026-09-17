@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { formatThaiDate } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -178,7 +179,7 @@ export function PaymentReportPage() {
                     <TableCell>{row.breeder}</TableCell>
                     <TableCell>{PAYMENT_TYPE_LABEL[row.payment_type]}</TableCell>
                     <TableCell>{row.amount} บาท</TableCell>
-                    <TableCell>{new Date(row.paid_at).toLocaleDateString('th-TH')}</TableCell>
+                    <TableCell>{formatThaiDate(row.paid_at)}</TableCell>
                     <TableCell>
                       <PaymentStatusBadge status={row.status} />
                     </TableCell>

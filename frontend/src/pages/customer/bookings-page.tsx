@@ -2,6 +2,8 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatThaiDate } from '@/lib/utils'
+import { ThaiDateInput } from '@/components/ui/thai-date-input'
 import {
   Select,
   SelectContent,
@@ -85,15 +87,11 @@ export function BookingsPage() {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          type="date" lang="th"
+        <ThaiDateInput
           value={bookingDate}
-          onChange={(e) => {
-            setBookingDate(e.target.value)
-            setPage(1)
-          }}
+          onValueChange={(v) => { setBookingDate(v); setPage(1) }}
+          placeholder="ค้นหาตามวันที่จอง"
           className="w-44"
-          aria-label="ค้นหาตามวันที่จอง"
         />
         {bookingDate && (
           <Button variant="ghost" size="sm" onClick={() => setBookingDate('')}>
@@ -135,7 +133,7 @@ export function BookingsPage() {
                     </TableCell>
                     <TableCell>{booking.hen.name}</TableCell>
                     <TableCell>{booking.breeder.name}</TableCell>
-                    <TableCell>{booking.booking_date}</TableCell>
+                    <TableCell>{formatThaiDate(booking.booking_date)}</TableCell>
                     <TableCell>{booking.price} บาท</TableCell>
                     <TableCell>
                       <BookingStatusBadge status={booking.status} />

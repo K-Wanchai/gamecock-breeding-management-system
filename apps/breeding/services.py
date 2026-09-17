@@ -137,10 +137,13 @@ def record_egg(
             'INCUBATION_DATE_BEFORE_EGG_DATE', 'incubation_date cannot be earlier than egg_date.', http_status=422,
         )
 
-    return Egg.objects.create(
+    egg = Egg.objects.create(
         booking=booking, total_eggs=total_eggs, good_eggs=good_eggs, bad_eggs=bad_eggs,
         egg_date=egg_date, incubation_date=incubation_date, remark=remark or '', recorded_by=recorded_by,
     )
+    from apps.notifications import services as notification_services
+    transaction.on_commit(lambda: notification_services.notify_egg_recorded(egg))
+    return egg
 
 
 @transaction.atomic
@@ -175,10 +178,13 @@ def create_insemination_record(
         booking.status = Booking.Status.IN_PROGRESS
         booking.save(update_fields=['status', 'updated_at'])
 
-    return InseminationRecord.objects.create(
+    record = InseminationRecord.objects.create(
         booking=booking, session_number=session_number,
         record_date=record_date, note=note or '', recorded_by=recorded_by,
     )
+    from apps.notifications import services as notification_services
+    transaction.on_commit(lambda: notification_services.notify_insemination_recorded(record))
+    return record
 
 
 def calculate_good_egg_rate(egg: Egg) -> Decimal:
